@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>COLONIAL - Timeless Elegance</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/style.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        .carousel-container { overflow-x: auto; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+        .carousel-container::-webkit-scrollbar { display: none; }
+        .carousel-slide { scroll-snap-align: start; }
+        @media (max-width: 640px) { .cart-drawer { width: 100%; } }
+        button, a { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+        .thumbnail-img.active { border-color: #000; border-width: 2px; }
+        .color-swatch { width: 32px; height: 32px; border-radius: 50%; cursor: pointer; border: 2px solid #ddd; transition: transform 0.1s; display: inline-block; margin: 0 4px; }
+        .color-swatch:hover { transform: scale(1.1); }
+        .color-swatch.selected { border-color: black; box-shadow: 0 0 0 2px white, 0 0 0 4px black; }
+        .star { font-size: 20px; cursor: pointer; color: #ddd; transition: color 0.1s; }
+        .star.active, .star.hover { color: #f5b301; }
+        .star-rating { display: inline-flex; gap: 4px; }
+        .payment-badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 10px; font-weight: 500; }
+        .payment-paid { background: #d1fae5; color: #065f46; }
+        .payment-pending { background: #fef3c7; color: #92400e; }
+        .payment-awaiting { background: #fed7aa; color: #9a3412; }
+        .payment-failed { background: #fee2e2; color: #991b1b; }
+
+        /* Mobile tap target enhancement for footer links */
+        footer a {
+            min-height: 44px;
+            display: inline-flex;
+            align-items: center;
+        }
+    </style>
+</head>
+<body class="bg-white text-black">
+
+<!-- Header (with wishlist icon) -->
+<header class="fixed top-0 left-0 w-full z-40 bg-white/90 backdrop-blur-md shadow-sm">
+    <div class="flex items-center justify-between px-4 py-3 md:px-6 md:py-4 lg:px-12">
+        <button onclick="toggleMenu()" class="hover:opacity-70" aria-label="Menu"><i data-lucide="menu" class="w-5 h-5 md:w-6 md:h-6"></i></button>
+        <h1 class="text-xl md:text-2xl lg:text-3xl font-bold tracking-tighter font-serif cursor-pointer" onclick="window.scrollTo(0,0)">COLONIAL</h1>
+        <div class="flex items-center gap-3 md:gap-4">
+            <button id="wishlist-btn" class="relative hover:opacity-70" aria-label="Wishlist">
+                <i data-lucide="heart" class="w-5 h-5 md:w-6 md:h-6"></i>
+                <span id="wishlist-count" class="absolute -top-2 -right-2 bg-black text-white text-[10px] min-w-[16px] h-4 rounded-full flex items-center justify-center px-1 opacity-0">0</span>
+            </button>
+            <div class="relative" id="account-container">
+                <button id="account-btn" class="hover:opacity-70"><i data-lucide="user" class="w-5 h-5 md:w-6 md:h-6"></i></button>
+                <div id="account-dropdown" class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg hidden z-50">
+                    <div class="py-2">
+                        <div id="user-info" class="px-4 py-2 text-sm text-gray-700 border-b"></div>
+                        <a href="#" id="my-orders-link" class="block px-4 py-2 text-sm hover:bg-gray-100">My Orders</a>
+                        <a href="#" id="wishlist-dropdown-link" class="block px-4 py-2 text-sm hover:bg-gray-100">Wishlist</a>
+                        <a href="#" id="logout-link" class="block px-4 py-2 text-sm hover:bg-gray-100 text-red-600">Logout</a>
+                    </div>
+                </div>
+            </div>
+            <button onclick="toggleCart()" class="relative hover:opacity-70">
+                <i data-lucide="shopping-bag" class="w-5 h-5 md:w-6 md:h-6"></i>
+                <span id="cart-count" class="absolute -top-2 -right-2 bg-black text-white text-[10px] min-w-[16px] h-4 rounded-full flex items-center justify-center px-1 opacity-0">0</span>
+            </button>
+        </div>
+    </div>
+</header>
+
+<!-- Mobile Menu Drawer -->
+<div id="mobile-menu" class="fixed top-0 left-0 w-64 h-full bg-white z-50 transform -translate-x-full transition-transform duration-300 shadow-lg p-6">
+    <button onclick="toggleMenu()" class="mb-8"><i data-lucide="x" class="w-5 h-5"></i></button>
+    <ul class="space-y-4">
+        <li><a href="#" onclick="filterByCategory('Women'); return false;" class="text-sm uppercase tracking-wide hover:opacity-70">Women</a></li>
+        <li><a href="#" onclick="filterByCategory('Men'); return false;" class="text-sm uppercase tracking-wide hover:opacity-70">Men</a></li>
+        <li><a href="#" onclick="filterByCategory('Children'); return false;" class="text-sm uppercase tracking-wide hover:opacity-70">Children</a></li>
+        <li><a href="#" onclick="filterByCategory('all'); return false;" class="text-sm uppercase tracking-wide text-red-600">Sale</a></li>
+        <li><a href="#" id="mobile-wishlist-link" class="text-sm uppercase tracking-wide hover:opacity-70">Wishlist</a></li>
+    </ul>
+</div>
+
+<!-- Hero Section with Carousel -->
+<section class="pt-20 md:pt-28 pb-12 text-center bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4">
+        <p class="text-xs tracking-widest uppercase text-gray-500 mb-2">Spring 2026</p>
+        <h2 class="text-3xl md:text-5xl lg:text-6xl font-serif mb-3">Timeless Elegance</h2>
+        <p class="text-gray-600 max-w-xl mx-auto mb-6 text-sm md:text-base">Discover our new collection – where minimalism meets sophistication.</p>
+        <div class="relative max-w-7xl mx-auto px-10 md:px-12">
+            <div class="carousel-container overflow-x-auto">
+                <div id="product-carousel" class="flex transition-transform duration-500" style="will-change: transform;"></div>
+            </div>
+            <button id="prev-btn" class="absolute left-0 top-1/2 -translate-y-1/2 bg-black/60 text-white p-2 rounded-full hover:bg-black transition shadow-md"><i data-lucide="chevron-left" class="w-5 h-5"></i></button>
+            <button id="next-btn" class="absolute right-0 top-1/2 -translate-y-1/2 bg-black/60 text-white p-2 rounded-full hover:bg-black transition shadow-md"><i data-lucide="chevron-right" class="w-5 h-5"></i></button>
+        </div>
+        <button class="mt-8 px-6 py-2 md:px-8 md:py-3 bg-black text-white text-sm uppercase tracking-wider rounded-full hover:bg-gray-800 transition">Shop Now</button>
+    </div>
+</section>
+
+<!-- Search & Filters -->
+<section class="px-4 md:px-6 lg:px-12 py-6 border-b">
+    <div class="max-w-7xl mx-auto flex flex-wrap gap-3 justify-center items-center">
+        <input type="text" id="search-input" placeholder="Search products..." class="border border-gray-300 rounded-full px-4 py-2 text-sm w-full md:w-64 focus:outline-none focus:border-black">
+        <select id="category-filter" class="border border-gray-300 rounded-full px-4 py-2 text-sm bg-white"><option value="all">All Categories</option></select>
+        <select id="sort-select" class="border border-gray-300 rounded-full px-4 py-2 text-sm bg-white"><option value="newest">Newest</option><option value="price_asc">Price: Low to High</option><option value="price_desc">Price: High to Low</option></select>
+    </div>
+</section>
+
+<!-- Product Grid -->
+<section class="px-4 md:px-6 lg:px-12 py-12">
+    <div class="max-w-7xl mx-auto">
+        <div id="products-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8"></div>
+        <div class="text-center mt-12"><button id="load-more" class="bg-black text-white px-6 py-2 rounded-full text-sm uppercase tracking-wider hidden hover:bg-gray-800 transition">Load More</button></div>
+    </div>
+</section>
+
+<!-- Cart Drawer -->
+<div id="cart-drawer" class="fixed top-0 right-0 w-full max-w-md h-full bg-white z-50 transform translate-x-full transition-transform duration-300 shadow-xl flex flex-col">
+    <div class="p-4 border-b flex justify-between items-center"><h2 class="text-lg font-medium">Your Cart</h2><button onclick="toggleCart()" class="hover:opacity-70"><i data-lucide="x" class="w-5 h-5"></i></button></div>
+    <div id="cart-items-list" class="flex-1 overflow-auto p-4 space-y-4"></div>
+    <div class="p-4 border-t bg-gray-50"><div class="flex justify-between mb-3 text-lg font-medium"><span>Total</span><span id="cart-total-price">BDT 0.00</span></div><button onclick="openCheckout()" class="w-full bg-black text-white py-3 text-sm uppercase tracking-wider rounded-lg hover:bg-gray-800 transition">Checkout</button></div>
+</div>
+<div id="cart-overlay" class="fixed inset-0 bg-black/50 z-40 opacity-0 invisible transition-all duration-300" onclick="toggleCart()"></div>
+
+<!-- Checkout Modal (with manual payment) -->
+<div id="checkout-modal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl max-w-md w-full mx-auto p-6 max-h-[90vh] overflow-auto">
+        <div class="flex justify-between items-center mb-4"><h3 class="text-2xl font-serif">Checkout</h3><button onclick="closeCheckout()" class="hover:opacity-70"><i data-lucide="x" class="w-5 h-5"></i></button></div>
+        <input type="text" id="customer-name" placeholder="Full name" class="w-full border rounded-lg p-2 mb-3" required>
+        <input type="email" id="customer-email" placeholder="Email address" class="w-full border rounded-lg p-2 mb-3" required>
+        <input type="text" id="customer-phone" placeholder="Phone (optional)" class="w-full border rounded-lg p-2 mb-3">
+        <textarea id="shipping-address" placeholder="Shipping address" class="w-full border rounded-lg p-2 mb-3"></textarea>
+
+        <!-- Payment Method Selection -->
+        <div class="mb-3">
+            <label class="block text-sm font-medium mb-1">Payment Method</label>
+            <div class="flex gap-4">
+                <label class="flex items-center gap-2">
+                    <input type="radio" name="payment_method" value="cash_on_delivery" checked> Cash on Delivery
+                </label>
+                <label class="flex items-center gap-2">
+                    <input type="radio" name="payment_method" value="bkash"> bKash / Nagad
+                </label>
+            </div>
+        </div>
+
+        <!-- Manual Payment Details (bKash/Nagad) -->
+        <div id="manual-payment-details" class="hidden mb-3 p-3 bg-gray-50 rounded-lg">
+            <p class="text-sm font-medium">Send payment to:</p>
+            <p class="text-lg font-mono font-bold">+8801871330654 (bKash/Nagad)</p>
+            <p class="text-xs text-gray-500 mt-1">After sending money, enter the transaction ID below.</p>
+            <input type="text" id="transaction-id" placeholder="Transaction ID (e.g., 8E7A2K9L)" class="w-full border rounded-lg p-2 mt-2">
+        </div>
+
+        <div class="mb-3">
+            <input type="text" id="coupon-code" placeholder="Coupon code" class="w-full border rounded-lg p-2 mb-1">
+            <button id="apply-coupon-btn" class="text-sm text-blue-600">Apply coupon</button>
+            <div id="coupon-feedback" class="text-xs mt-1"></div>
+        </div>
+
+        <button onclick="placeOrder()" class="w-full bg-black text-white py-2 rounded-lg text-sm uppercase tracking-wider">Place Order</button>
+        <button onclick="closeCheckout()" class="w-full mt-2 border border-gray-300 py-2 rounded-lg text-sm hover:bg-gray-100">Cancel</button>
+    </div>
+</div>
+
+<!-- Product Quick View Modal -->
+<div id="product-modal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl max-w-2xl w-full mx-auto p-4 md:p-6 max-h-[90vh] overflow-auto">
+        <div class="flex justify-between items-start">
+            <h3 id="modal-name" class="text-2xl font-serif"></h3>
+            <div class="flex gap-2">
+                <button id="modal-wishlist-btn" class="hover:opacity-70"><i data-lucide="heart" class="w-5 h-5"></i></button>
+                <button onclick="closeProductModal()" class="hover:opacity-70"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+        </div>
+        <div class="relative">
+            <img id="modal-main-img" class="w-full h-64 md:h-80 object-cover rounded-lg cursor-pointer" onclick="openLightbox()">
+            <div id="modal-thumbnails" class="flex gap-2 mt-3 overflow-x-auto pb-2"></div>
+        </div>
+        <p id="modal-price" class="text-xl font-semibold mt-3"></p>
+        <div class="flex items-center gap-2 mt-1">
+            <div id="modal-rating" class="star-rating"></div>
+            <span id="modal-review-count" class="text-sm text-gray-500"></span>
+        </div>
+        <p id="modal-desc" class="text-gray-600 my-3 leading-relaxed text-sm"></p>
+        <div class="mt-3">
+            <p class="text-sm uppercase tracking-wider font-medium mb-2">Select Size</p>
+            <div class="flex gap-2" id="size-options">
+                <button class="size-btn w-10 h-10 border rounded-full" data-size="XS">XS</button>
+                <button class="size-btn w-10 h-10 border rounded-full" data-size="S">S</button>
+                <button class="size-btn w-10 h-10 border rounded-full active" data-size="M">M</button>
+                <button class="size-btn w-10 h-10 border rounded-full" data-size="L">L</button>
+                <button class="size-btn w-10 h-10 border rounded-full" data-size="XL">XL</button>
+            </div>
+        </div>
+        <div id="color-selector" class="mt-4">
+            <p class="text-sm uppercase tracking-wider font-medium mb-2">Select Colour</p>
+            <div id="color-swatches" class="flex gap-3 flex-wrap"></div>
+            <p id="selected-color-name" class="text-xs text-gray-500 mt-1"></p>
+        </div>
+        <button onclick="addCurrentToCart()" class="mt-6 w-full bg-black text-white py-3 rounded-lg text-sm uppercase tracking-wider">Add to Cart</button>
+        <hr class="my-4">
+        <h4 class="font-semibold text-lg">Customer Reviews</h4>
+        <div id="reviews-container" class="max-h-60 overflow-y-auto space-y-3 mt-2"></div>
+        <div id="add-review-section" class="mt-4 border-t pt-3">
+            <h5 class="font-medium">Write a review</h5>
+            <div class="star-rating mb-2" id="review-stars">
+                <span class="star" data-rating="1">★</span>
+                <span class="star" data-rating="2">★</span>
+                <span class="star" data-rating="3">★</span>
+                <span class="star" data-rating="4">★</span>
+                <span class="star" data-rating="5">★</span>
+            </div>
+            <textarea id="review-comment" rows="2" class="w-full border rounded p-2 text-sm" placeholder="Share your experience..."></textarea>
+            <button id="submit-review-btn" class="mt-2 bg-black text-white px-4 py-1 text-sm rounded">Submit Review</button>
+        </div>
+    </div>
+</div>
+
+<!-- Wishlist Modal -->
+<div id="wishlist-modal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl max-w-3xl w-full mx-auto p-6 max-h-[80vh] overflow-auto">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-2xl font-serif">My Wishlist</h3>
+            <button onclick="closeWishlistModal()" class="hover:opacity-70"><i data-lucide="x" class="w-5 h-5"></i></button>
+        </div>
+        <div id="wishlist-items" class="grid grid-cols-2 md:grid-cols-3 gap-4"></div>
+    </div>
+</div>
+
+<!-- Login/Register Modal -->
+<div id="auth-modal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl max-w-md w-full mx-auto p-6">
+        <div class="flex justify-between items-center mb-4"><h3 id="auth-modal-title" class="text-2xl font-serif">Login</h3><button onclick="closeAuthModal()" class="hover:opacity-70"><i data-lucide="x" class="w-5 h-5"></i></button></div>
+        <div id="auth-form">
+            <input type="email" id="auth-email" placeholder="Email" class="w-full border rounded-lg p-2 mb-3">
+            <input type="password" id="auth-password" placeholder="Password" class="w-full border rounded-lg p-2 mb-4">
+            <div id="auth-name-group" class="hidden"><input type="text" id="auth-name" placeholder="Full name" class="w-full border rounded-lg p-2 mb-3"></div>
+            <button id="auth-submit" class="w-full bg-black text-white py-2 rounded-lg">Login</button>
+            <p class="text-center text-sm mt-4"><span id="auth-toggle-text">Don't have an account?</span><button id="auth-toggle-btn" class="text-blue-600 ml-1">Register</button></p>
+        </div>
+    </div>
+</div>
+
+<!-- My Orders Modal (with payment status) -->
+<div id="orders-modal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl max-w-3xl w-full mx-auto p-6 max-h-[80vh] overflow-auto">
+        <div class="flex justify-between items-center mb-4"><h3 class="text-2xl font-serif">My Orders</h3><button onclick="closeOrdersModal()" class="hover:opacity-70"><i data-lucide="x" class="w-5 h-5"></i></button></div>
+        <div id="orders-list-container" class="space-y-4"></div>
+    </div>
+</div>
+
+<!-- ==================== OPTIMIZED MOBILE FOOTER WITH SOCIAL MEDIA ==================== -->
+<footer class="bg-black text-white/80 mt-16 py-8 px-4 md:px-6 lg:px-12 border-t border-gray-800">
+    <div class="max-w-7xl mx-auto">
+        <!-- Responsive grid: stacks on mobile, 4 columns on medium screens and up -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-8 text-center md:text-left">
+            <!-- Contact / Brand Column -->
+            <div>
+                <h3 class="font-serif text-xl mb-3 text-white">COLONIAL</h3>
+                <p class="text-sm">Timeless elegance for the modern wardrobe.</p>
+                <div class="mt-4 space-y-2 text-sm">
+                    <p class="break-all">📧 <a href="mailto:Colonialbussinessltd@gmail.com" class="hover:underline inline-block py-1">Colonialbussinessltd@gmail.com</a></p>
+                    <p>📞 <a href="tel:+8801871330654" class="hover:underline inline-block py-1">+880 1871-330654</a> <span class="text-xs">(bKash/Nagad)</span></p>
+                    <p>📞 <a href="tel:+8801643425517" class="hover:underline inline-block py-1">+880 1643-425517</a> <span class="text-xs">(Support)</span></p>
+                    <p>📍 Chittagong, Bangladesh</p>
+                </div>
+            </div>
+
+            <!-- Quick Links Column -->
+            <div>
+                <h4 class="font-semibold text-white mb-3">Quick Links</h4>
+                <ul class="space-y-2 text-sm">
+                    <li><a href="#" onclick="window.scrollTo({top:0, behavior:'smooth'}); return false;" class="inline-block py-1 hover:underline">Home</a></li>
+                    <li><a href="#" onclick="filterByCategory('all'); window.scrollTo({top:600, behavior:'smooth'}); return false;" class="inline-block py-1 hover:underline">Shop</a></li>
+                    <li><a href="#" id="footer-wishlist-link" class="inline-block py-1 hover:underline">Wishlist</a></li>
+                </ul>
+            </div>
+
+            <!-- Legal Column -->
+            <div>
+                <h4 class="font-semibold text-white mb-3">Legal</h4>
+                <ul class="space-y-2 text-sm">
+                    <li><a href="#" id="footer-terms-link" class="inline-block py-1 hover:underline">Terms & Conditions</a></li>
+                    <li><a href="#" id="footer-privacy-link" class="inline-block py-1 hover:underline">Privacy Policy</a></li>
+                </ul>
+            </div>
+
+            <!-- Social Media Column -->
+            <div>
+                <h4 class="font-semibold text-white mb-3">Follow Us</h4>
+                <div class="flex justify-center md:justify-start space-x-6">
+                    <a href="https://www.facebook.com/share/18PUUso8Pp/" target="_blank" rel="noopener noreferrer" class="text-white/80 hover:text-white transition-colors duration-200" aria-label="Facebook">
+                        <i data-lucide="facebook" class="w-6 h-6"></i>
+                    </a>
+                    <a href="https://www.instagram.com/colonial_ltd?igsh=Zm8xa21hZjV6NHRu" target="_blank" rel="noopener noreferrer" class="text-white/80 hover:text-white transition-colors duration-200" aria-label="Instagram">
+                        <i data-lucide="instagram" class="w-6 h-6"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Copyright -->
+        <div class="border-t border-gray-800 mt-8 pt-6 text-center text-xs text-white/50">
+            &copy; 2026 COLONIAL. All rights reserved.
+        </div>
+    </div>
+</footer>
+
+<!-- Terms & Conditions Modal -->
+<div id="terms-modal" class="fixed inset-0 bg-black/70 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl max-w-2xl w-full mx-auto p-6 max-h-[80vh] overflow-auto text-gray-800">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-2xl font-serif">Terms & Conditions</h3>
+            <button onclick="closeTermsModal()" class="hover:opacity-70"><i data-lucide="x" class="w-5 h-5"></i></button>
+        </div>
+        <div class="space-y-4 text-sm">
+            <p><strong>1. General</strong><br>By accessing or using the COLONIAL website, you agree to be bound by these Terms & Conditions.</p>
+            <p><strong>2. Products & Pricing</strong><br>All product descriptions, prices, and availability are subject to change without notice. We reserve the right to limit quantities.</p>
+            <p><strong>3. Orders & Payment</strong><br>Orders are confirmed only after payment verification. For bKash/Nagad orders, payment status must be verified by our admin before shipment.</p>
+            <p><strong>4. Shipping & Delivery</strong><br>We ship within Bangladesh. Delivery times are estimates. Risk of loss passes to you upon delivery.</p>
+            <p><strong>5. Returns & Refunds</strong><br>Items must be returned unused within 7 days of delivery. Refunds will be processed after inspection.</p>
+            <p><strong>6. Intellectual Property</strong><br>All content (logos, images, text) is property of COLONIAL and may not be used without permission.</p>
+            <p><strong>7. Contact</strong><br>For any questions, email us at Colonialbussinessltd@gmail.com or call +8801643425517.</p>
+            <p><strong>8. Governing Law</strong><br>These terms are governed by the laws of Bangladesh.</p>
+        </div>
+        <button onclick="closeTermsModal()" class="mt-6 w-full bg-black text-white py-2 rounded-lg">Close</button>
+    </div>
+</div>
+
+<!-- Privacy Policy Modal -->
+<div id="privacy-modal" class="fixed inset-0 bg-black/70 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl max-w-2xl w-full mx-auto p-6 max-h-[80vh] overflow-auto text-gray-800">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-2xl font-serif">Privacy Policy</h3>
+            <button onclick="closePrivacyModal()" class="hover:opacity-70"><i data-lucide="x" class="w-5 h-5"></i></button>
+        </div>
+        <div class="space-y-4 text-sm">
+            <p><strong>Information We Collect</strong><br>We collect name, email, shipping address, phone number, and order details to process your purchases.</p>
+            <p><strong>How We Use Your Information</strong><br>Your data is used solely for order fulfillment, customer support, and improving our service. We do not sell your personal information.</p>
+            <p><strong>Payment Security</strong><br>All online payments are processed through secure gateways. We do not store full payment credentials.</p>
+            <p><strong>Cookies</strong><br>We use cookies to remember cart items and preferences. You may disable cookies in your browser.</p>
+            <p><strong>Third-Party Sharing</strong><br>We share data only with delivery partners and payment processors as necessary.</p>
+            <p><strong>Your Rights</strong><br>You may request access, correction, or deletion of your data by emailing Colonialbussinessltd@gmail.com.</p>
+            <p><strong>Updates</strong><br>This policy may be updated. Changes will be posted on this page.</p>
+        </div>
+        <button onclick="closePrivacyModal()" class="mt-6 w-full bg-black text-white py-2 rounded-lg">Close</button>
+    </div>
+</div>
+
+<script>
+    // Footer modal functions
+    function openTermsModal() { document.getElementById('terms-modal').style.display = 'flex'; }
+    function closeTermsModal() { document.getElementById('terms-modal').style.display = 'none'; }
+    function openPrivacyModal() { document.getElementById('privacy-modal').style.display = 'flex'; }
+    function closePrivacyModal() { document.getElementById('privacy-modal').style.display = 'none'; }
+
+    // Attach event listeners after DOM ready
+    document.addEventListener('DOMContentLoaded', function() {
+        const termsLink = document.getElementById('footer-terms-link');
+        const privacyLink = document.getElementById('footer-privacy-link');
+        const footerWishlist = document.getElementById('footer-wishlist-link');
+        if (termsLink) termsLink.addEventListener('click', (e) => { e.preventDefault(); openTermsModal(); });
+        if (privacyLink) privacyLink.addEventListener('click', (e) => { e.preventDefault(); openPrivacyModal(); });
+        if (footerWishlist) footerWishlist.addEventListener('click', (e) => { e.preventDefault(); openWishlistModal(); });
+    });
+
+    lucide.createIcons();
+
+    // ------------------- State -------------------
+    let currentPage = 1, totalPages = 1;
+    let currentFilters = { q: '', category: 'all', sort: 'newest' };
+    let cart = JSON.parse(localStorage.getItem('amoura_cart')) || [];
+    let currentProduct = null;
+    let selectedSize = 'M';
+    let selectedColor = { hex: '', name: '' };
+    let authToken = localStorage.getItem('amoura_token');
+    let currentUser = null;
+    let appliedCoupon = null;
+    let couponDiscount = 0;
+    let customerEventSource = null;
+    let carouselProducts = [], currentSlide = 0, slideInterval;
+    let wishlist = [];
+    let currentRating = 0;
+
+    function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : m === '>' ? '&gt;' : m); }
+    function showToast(message) {
+        let toast = document.getElementById('toast');
+        if (!toast) { toast = document.createElement('div'); toast.id = 'toast'; toast.className = 'fixed bottom-4 right-4 bg-black text-white px-4 py-2 rounded-lg shadow-lg z-50 transition-opacity duration-300 opacity-0 text-sm'; document.body.appendChild(toast); }
+        toast.innerText = message; toast.style.opacity = '1'; setTimeout(() => toast.style.opacity = '0', 3000);
+    }
+
+    function getPaymentStatusBadge(status) {
+        const statusMap = {
+            'paid': 'payment-paid',
+            'pending': 'payment-pending',
+            'awaiting_verification': 'payment-awaiting',
+            'failed': 'payment-failed'
+        };
+        const className = statusMap[status] || 'payment-pending';
+        const displayText = status ? status.replace('_', ' ') : 'pending';
+        return `<span class="payment-badge ${className}">${escapeHtml(displayText)}</span>`;
+    }
+
+    // ------------------- Wishlist -------------------
+    async function loadWishlistCount() {
+        if (!authToken) return;
+        try {
+            const res = await fetch('/api/wishlist', { headers: { 'Authorization': `Bearer ${authToken}` } });
+            const items = await res.json();
+            wishlist = items.map(p => p.id);
+            document.getElementById('wishlist-count').innerText = wishlist.length;
+            document.getElementById('wishlist-count').style.opacity = wishlist.length ? '1' : '0';
+        } catch(err) { console.error(err); }
+    }
+    async function toggleWishlist(productId) {
+        if (!authToken) { openAuthModal(); return; }
+        const inWishlist = wishlist.includes(productId);
+        const url = inWishlist ? `/api/wishlist/${productId}` : '/api/wishlist';
+        const method = inWishlist ? 'DELETE' : 'POST';
+        try {
+            const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` }, body: JSON.stringify({ product_id: productId }) });
+            if (res.ok) {
+                if (inWishlist) wishlist = wishlist.filter(id => id !== productId);
+                else wishlist.push(productId);
+                document.getElementById('wishlist-count').innerText = wishlist.length;
+                document.getElementById('wishlist-count').style.opacity = wishlist.length ? '1' : '0';
+                showToast(inWishlist ? 'Removed from wishlist' : 'Added to wishlist');
+                renderWishlistModal();
+                const modalHeart = document.getElementById('modal-wishlist-btn')?.querySelector('i');
+                if (modalHeart) {
+                    if (inWishlist) modalHeart.classList.remove('fill-red-500');
+                    else modalHeart.classList.add('fill-red-500');
+                }
+            }
+        } catch(err) { console.error(err); }
+    }
+    async function renderWishlistModal() {
+        if (!authToken) return;
+        const res = await fetch('/api/wishlist', { headers: { 'Authorization': `Bearer ${authToken}` } });
+        const products = await res.json();
+        const container = document.getElementById('wishlist-items');
+        if (!products.length) { container.innerHTML = '<div class="col-span-full text-center text-gray-500">Your wishlist is empty.</div>'; return; }
+        container.innerHTML = products.map(p => `
+            <div class="border rounded p-2 text-center">
+                <img src="${p.image_url || 'https://placehold.co/150x180'}" class="h-32 w-full object-cover">
+                <p class="font-medium mt-1">${escapeHtml(p.name)}</p>
+                <p>BDT ${p.final_price || p.price}</p>
+                <button onclick="addToCart({id:${p.id}, name:'${p.name.replace(/'/g, "\\'")}', price:${p.final_price || p.price}, image_url:'${p.image_url}'}, 1); closeWishlistModal();" class="bg-black text-white text-xs px-2 py-1 rounded mt-1">Add to Cart</button>
+                <button onclick="toggleWishlist(${p.id})" class="text-xs underline ml-1">Remove</button>
+            </div>
+        `).join('');
+    }
+    function openWishlistModal() { if (!authToken) { openAuthModal(); return; } renderWishlistModal(); document.getElementById('wishlist-modal').style.display = 'flex'; }
+    function closeWishlistModal() { document.getElementById('wishlist-modal').style.display = 'none'; }
+
+    // ------------------- Reviews -------------------
+    async function loadReviews(productId) {
+        const res = await fetch(`/api/products/${productId}/reviews`);
+        const reviews = await res.json();
+        const container = document.getElementById('reviews-container');
+        if (!reviews.length) { container.innerHTML = '<div class="text-gray-500 text-sm">No reviews yet. Be the first!</div>'; }
+        else {
+            container.innerHTML = reviews.map(r => `
+                <div class="border-b pb-2">
+                    <div class="flex items-center gap-1">
+                        <div class="star-rating">${'★'.repeat(r.rating)}${'☆'.repeat(5-r.rating)}</div>
+                        <span class="text-xs text-gray-500">${escapeHtml(r.reviewer_name)}</span>
+                    </div>
+                    <p class="text-sm">${escapeHtml(r.comment)}</p>
+                </div>
+            `).join('');
+        }
+        const avg = reviews.reduce((s,r)=>s+r.rating,0)/reviews.length || 0;
+        const starsHtml = '<span class="star-rating">' + '★'.repeat(Math.round(avg)) + '☆'.repeat(5-Math.round(avg)) + '</span>';
+        document.getElementById('modal-rating').innerHTML = starsHtml;
+        document.getElementById('modal-review-count').innerText = `(${reviews.length} reviews)`;
+    }
+    async function submitReview(productId, rating, comment) {
+        if (!authToken) { alert('Please login to review.'); openAuthModal(); return; }
+        const res = await fetch(`/api/products/${productId}/reviews`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
+            body: JSON.stringify({ rating, comment })
+        });
+        if (res.ok) { showToast('Review submitted!'); loadReviews(productId); }
+        else { const err = await res.json(); alert(err.error); }
+    }
+
+    // ------------------- Customer SSE -------------------
+    function initCustomerSSE() {
+        if (customerEventSource) customerEventSource.close();
+        if (!authToken) return;
+        const url = `/api/customer/order-events?token=${authToken}`;
+        customerEventSource = new EventSource(url);
+        customerEventSource.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            if (data.type === 'order_status_update') {
+                showToast(`Order #${data.orderId} status changed to ${data.newStatus}`);
+                if (document.getElementById('orders-modal').style.display === 'flex') loadCustomerOrders();
+            } else if (data.type === 'payment_status_update') {
+                showToast(`Payment for order #${data.orderId} is now ${data.paymentStatus}`);
+                if (document.getElementById('orders-modal').style.display === 'flex') loadCustomerOrders();
+            }
+        };
+        customerEventSource.onerror = () => setTimeout(initCustomerSSE, 5000);
+    }
+
+    // ------------------- Authentication -------------------
+    async function loadCurrentUser() {
+        if (!authToken) return;
+        try {
+            const res = await fetch('/api/auth/me', { headers: { 'Authorization': `Bearer ${authToken}` } });
+            if (res.ok) { currentUser = await res.json(); updateAuthUI(); initCustomerSSE(); loadWishlistCount(); }
+            else { localStorage.removeItem('amoura_token'); authToken = null; currentUser = null; updateAuthUI(); }
+        } catch(err){ console.error(err); }
+    }
+    function updateAuthUI() {
+        const ui = document.getElementById('user-info');
+        if (currentUser) ui.innerHTML = `<div class="font-medium">${escapeHtml(currentUser.name || currentUser.email)}</div><div class="text-xs text-gray-500">${currentUser.role}</div>`;
+        else ui.innerHTML = `<div class="text-gray-500">Not logged in</div>`;
+        const emailField = document.getElementById('customer-email');
+        if (emailField && currentUser && !emailField.value) emailField.value = currentUser.email;
+    }
+
+    document.getElementById('account-btn')?.addEventListener('click', (e) => { e.stopPropagation(); document.getElementById('account-dropdown').classList.toggle('hidden'); });
+    document.addEventListener('click', () => document.getElementById('account-dropdown')?.classList.add('hidden'));
+    document.getElementById('my-orders-link')?.addEventListener('click', (e) => { e.preventDefault(); if (!currentUser) openAuthModal(); else loadCustomerOrders(); });
+    document.getElementById('logout-link')?.addEventListener('click', (e) => { e.preventDefault(); if (customerEventSource) customerEventSource.close(); localStorage.removeItem('amoura_token'); authToken = null; currentUser = null; updateAuthUI(); location.reload(); });
+    document.getElementById('wishlist-btn')?.addEventListener('click', () => openWishlistModal());
+    document.getElementById('wishlist-dropdown-link')?.addEventListener('click', (e) => { e.preventDefault(); openWishlistModal(); });
+    document.getElementById('mobile-wishlist-link')?.addEventListener('click', (e) => { e.preventDefault(); openWishlistModal(); });
+
+    let isLoginMode = true;
+    function openAuthModal() { isLoginMode = true; document.getElementById('auth-modal-title').innerText = 'Login'; document.getElementById('auth-submit').innerText = 'Login'; document.getElementById('auth-toggle-text').innerText = "Don't have an account?"; document.getElementById('auth-name-group').classList.add('hidden'); document.getElementById('auth-modal').style.display = 'flex'; }
+    function closeAuthModal() { document.getElementById('auth-modal').style.display = 'none'; }
+    document.getElementById('auth-toggle-btn')?.addEventListener('click', () => {
+        isLoginMode = !isLoginMode;
+        if (isLoginMode) { document.getElementById('auth-modal-title').innerText = 'Login'; document.getElementById('auth-submit').innerText = 'Login'; document.getElementById('auth-toggle-text').innerText = "Don't have an account?"; document.getElementById('auth-name-group').classList.add('hidden'); }
+        else { document.getElementById('auth-modal-title').innerText = 'Register'; document.getElementById('auth-submit').innerText = 'Register'; document.getElementById('auth-toggle-text').innerText = "Already have an account?"; document.getElementById('auth-name-group').classList.remove('hidden'); }
+    });
+    document.getElementById('auth-submit')?.addEventListener('click', async () => {
+        const email = document.getElementById('auth-email').value.trim(), password = document.getElementById('auth-password').value;
+        if (!email || !password) return alert('Email and password required');
+        const endpoint = isLoginMode ? '/api/auth/login' : '/api/auth/register';
+        const body = { email, password }; if (!isLoginMode) body.name = document.getElementById('auth-name').value.trim();
+        try {
+            const res = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Authentication failed');
+            authToken = data.token; localStorage.setItem('amoura_token', authToken); currentUser = data.user; updateAuthUI(); closeAuthModal(); initCustomerSSE(); loadWishlistCount();
+        } catch(err) { alert(err.message); }
+    });
+
+    // ------------------- Customer Orders (with payment status) -------------------
+    async function loadCustomerOrders() {
+        if (!authToken) return;
+        try {
+            const res = await fetch('/api/customer/orders', { headers: { 'Authorization': `Bearer ${authToken}` } });
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const orders = await res.json();
+            const container = document.getElementById('orders-list-container');
+            if (!orders.length) container.innerHTML = '<div class="text-center text-gray-500 py-8">You have no orders yet.</div>';
+            else {
+                container.innerHTML = orders.map(o => {
+                    let itemsHtml = '';
+                    try {
+                        const items = JSON.parse(o.items || '[]');
+                        itemsHtml = items.map(i => `
+                            <div class="flex gap-3 items-center border-b pb-2 mb-2">
+                                <img src="${i.image_url || 'https://placehold.co/40x50/e2e2e2/black?text=No+Img'}" class="w-10 h-12 object-cover rounded">
+                                <div class="flex-1">
+                                    <div>${escapeHtml(i.name)} ${i.size ? `(${i.size})` : ''} ${i.color ? `- ${i.color}` : ''}</div>
+                                    <div class="flex justify-between text-sm">
+                                        <span>Qty: ${i.quantity}</span>
+                                        <span>BDT ${i.price}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('');
+                    } catch(e) { itemsHtml = 'Unable to load items'; }
+                    const paymentBadge = getPaymentStatusBadge(o.payment_status);
+                    return `<div class="border rounded-lg p-4">
+                        <div class="flex justify-between flex-wrap gap-2">
+                            <div><strong>Order #${escapeHtml(o.order_number || o.id)}</strong><br>${new Date(o.created_at).toLocaleDateString()}</div>
+                            <div class="text-right">
+                                <span class="font-semibold">BDT ${parseFloat(o.final_amount || o.total_amount || 0).toFixed(2)}</span><br>
+                                <span class="text-sm capitalize">${escapeHtml(o.order_status || 'pending')}</span><br>
+                                <span class="text-xs">Payment: ${paymentBadge}</span>
+                            </div>
+                        </div>
+                        <div class="mt-2">${itemsHtml}</div>
+                    </div>`;
+                }).join('');
+            }
+            document.getElementById('orders-modal').style.display = 'flex';
+        } catch(err) { alert('Could not load your orders.'); }
+    }
+    function closeOrdersModal() { document.getElementById('orders-modal').style.display = 'none'; }
+
+    // ------------------- Cart -------------------
+    function saveCart() { localStorage.setItem('amoura_cart', JSON.stringify(cart)); updateCartUI(); }
+    function updateCartUI() {
+        const container = document.getElementById('cart-items-list');
+        const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        const total = subtotal - couponDiscount;
+        document.getElementById('cart-total-price').innerText = `BDT ${Math.max(0,total).toFixed(2)}`;
+        const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+        document.getElementById('cart-count').innerText = totalItems;
+        document.getElementById('cart-count').style.opacity = totalItems ? '1' : '0';
+        if (!cart.length) container.innerHTML = '<p class="text-center text-gray-500 py-12">Your cart is empty</p>';
+        else {
+            container.innerHTML = cart.map((item, idx) => `
+                <div class="flex gap-3 border-b pb-3">
+                    <img src="${item.image_url || 'https://placehold.co/70x90/e2e2e2/black?text=COLONIAL'}" class="w-16 h-20 object-cover bg-gray-100 rounded">
+                    <div class="flex-1">
+                        <p class="font-medium text-sm">${escapeHtml(item.name)}</p>
+                        <p class="text-xs text-gray-500">Size: ${item.size || 'M'} | Colour: ${item.color || 'Default'}</p>
+                        <p class="text-sm text-gray-600 mt-1">BDT ${item.price}</p>
+                        <div class="flex items-center gap-2 mt-2">
+                            <button onclick="changeQty(${idx}, -1)" class="w-6 h-6 border rounded-full flex items-center justify-center text-xs">-</button>
+                            <span class="w-6 text-center text-sm">${item.quantity}</span>
+                            <button onclick="changeQty(${idx}, 1)" class="w-6 h-6 border rounded-full flex items-center justify-center text-xs">+</button>
+                            <button onclick="removeFromCart(${idx})" class="text-red-500 text-xs ml-2 underline">Remove</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        lucide.createIcons();
+    }
+    function changeQty(idx, delta) { let q = cart[idx].quantity + delta; if (q <= 0) cart.splice(idx,1); else cart[idx].quantity = q; saveCart(); }
+    function removeFromCart(idx) { cart.splice(idx,1); saveCart(); }
+    function addToCart(product, qty=1) {
+        const productImage = product.image_url || (product.images && product.images[0]) || '';
+        const finalSize = selectedSize || 'M';
+        const finalColor = selectedColor.name || 'Default';
+        const existing = cart.find(i => i.id === product.id && i.size === finalSize && i.color === finalColor);
+        if (existing) existing.quantity += qty;
+        else cart.push({ ...product, quantity: qty, size: finalSize, color: finalColor, image_url: productImage });
+        saveCart();
+        toggleCart();
+    }
+    function toggleCart() { let drawer = document.getElementById('cart-drawer'), overlay = document.getElementById('cart-overlay'); drawer.classList.toggle('translate-x-full'); overlay.classList.toggle('opacity-0'); overlay.classList.toggle('invisible'); document.body.style.overflow = drawer.classList.contains('translate-x-full') ? '' : 'hidden'; }
+    function toggleMenu() { document.getElementById('mobile-menu').classList.toggle('-translate-x-full'); }
+
+    // ------------------- Carousel -------------------
+    function getSlideWidth() { let first = document.querySelector('#product-carousel .flex-shrink-0'); if (!first) return 352; let style = getComputedStyle(first); return first.offsetWidth + parseFloat(style.marginLeft) + parseFloat(style.marginRight); }
+    function updateCarouselPosition() { let container = document.getElementById('product-carousel'); if (!container) return; container.style.transform = `translateX(-${currentSlide * getSlideWidth()}px)`; }
+    async function loadCarouselProducts() { try { let res = await fetch('/api/products?limit=6'); let data = await res.json(); carouselProducts = data.slice(0,6); renderCarousel(); startAutoSlide(); window.addEventListener('resize', updateCarouselPosition); } catch(e){ console.error(e); } }
+    function renderCarousel() { let container = document.getElementById('product-carousel'); if(!container) return; if(!carouselProducts.length) { container.innerHTML = '<div class="w-full text-center py-12 text-gray-500">No products</div>'; return; } container.innerHTML = carouselProducts.map(p => `<div class="flex-shrink-0 w-64 md:w-80 mx-3 md:mx-4 bg-white rounded-xl shadow-lg overflow-hidden transition-transform hover:scale-105 duration-300"><img src="${p.image_url || 'https://placehold.co/400x500/e2e2e2/black?text=COLONIAL'}" class="w-full h-48 md:h-64 object-cover"><div class="p-3 md:p-4 text-center"><h3 class="font-serif text-lg md:text-xl mb-1">${escapeHtml(p.name)}</h3><p class="text-gray-600 text-sm">BDT ${p.final_price || p.price}</p><button onclick="addToCart({id:${p.id}, name:'${p.name.replace(/'/g, "\\'")}', price:${p.final_price || p.price}, image_url:'${p.image_url}'}, 1)" class="mt-3 bg-black text-white px-3 py-1 text-xs rounded-full hover:bg-gray-800 transition">Quick Shop</button></div></div>`).join(''); lucide.createIcons(); updateCarouselPosition(); }
+    function startAutoSlide() { if(slideInterval) clearInterval(slideInterval); slideInterval = setInterval(() => { if(carouselProducts.length) { currentSlide = (currentSlide+1) % carouselProducts.length; updateCarouselPosition(); } }, 5000); }
+    function nextSlide() { if(!carouselProducts.length) return; currentSlide = (currentSlide+1)%carouselProducts.length; updateCarouselPosition(); resetAutoSlide(); }
+    function prevSlide() { if(!carouselProducts.length) return; currentSlide = (currentSlide-1+carouselProducts.length)%carouselProducts.length; updateCarouselPosition(); resetAutoSlide(); }
+    function resetAutoSlide() { if(slideInterval) clearInterval(slideInterval); slideInterval = setInterval(() => { currentSlide = (currentSlide+1)%carouselProducts.length; updateCarouselPosition(); }, 5000); }
+
+    // ------------------- Product Grid -------------------
+    async function loadProducts(resetPage = true) {
+        if (resetPage) currentPage = 1;
+        const params = new URLSearchParams({ q: currentFilters.q, category: currentFilters.category, sort: currentFilters.sort, page: currentPage, limit: 8 });
+        const res = await fetch(`/api/products/search?${params}`);
+        const data = await res.json();
+        const products = data.products;
+        totalPages = Math.ceil(data.total / data.limit);
+        const container = document.getElementById('products-container');
+        if (resetPage) container.innerHTML = '';
+        products.forEach(p => {
+            const card = document.createElement('div');
+            card.className = 'product-card group bg-white rounded-xl overflow-hidden shadow-sm cursor-pointer';
+            card.innerHTML = `<div class="relative aspect-[3/4] overflow-hidden bg-gray-100"><img src="${p.image_url || 'https://placehold.co/600x800/e2e2e2/black?text=COLONIAL'}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">${p.badge ? `<span class="absolute top-2 left-2 bg-white text-black text-xs px-2 py-1 rounded-full z-10">${escapeHtml(p.badge)}</span>` : ''}<div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition flex items-end p-3"><button class="w-full bg-white text-black py-2 text-xs uppercase tracking-wider font-medium rounded" onclick="event.stopPropagation(); addToCart({id:${p.id}, name:'${p.name.replace(/'/g, "\\'")}', price:${p.final_price || p.price}, image_url:'${p.image_url}'}, 1)">Quick Add</button></div></div><div class="p-4"><h3 class="font-medium text-gray-900">${escapeHtml(p.name)}</h3><div class="flex items-center gap-2 mt-1"><span class="font-semibold">BDT ${p.final_price || p.price}</span>${p.discount_amount > 0 ? `<span class="text-sm text-gray-400 line-through">BDT ${p.price}</span>` : ''}${p.discount_percent > 0 ? `<span class="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded">-${p.discount_percent}%</span>` : ''}</div>${p.colors && p.colors.length ? `<div class="flex gap-1 mt-2">${p.colors.slice(0,3).map(c => `<div class="w-3 h-3 rounded-full border border-gray-300" style="background-color:${c}"></div>`).join('')}</div>` : ''}</div>`;
+            card.onclick = () => openProductModal(p);
+            container.appendChild(card);
+        });
+        document.getElementById('load-more').classList.toggle('hidden', currentPage >= totalPages);
+    }
+    async function loadCategories() { const res = await fetch('/api/products'); const prods = await res.json(); const cats = ['all', ...new Set(prods.map(p => p.category))]; document.getElementById('category-filter').innerHTML = cats.map(cat => `<option value="${cat}">${cat === 'all' ? 'All Categories' : cat}</option>`).join(''); }
+    function filterByCategory(cat) { document.getElementById('category-filter').value = cat; currentFilters.category = cat; loadProducts(true); }
+    window.filterByCategory = filterByCategory;
+
+    // ------------------- Product Modal -------------------
+    let currentProductImages = [];
+    async function openProductModal(product) {
+        currentProduct = product;
+        document.getElementById('modal-name').innerText = product.name;
+        document.getElementById('modal-price').innerHTML = `BDT ${product.final_price || product.price}`;
+        document.getElementById('modal-desc').innerText = product.description || 'Premium quality garment.';
+        currentProductImages = (product.images && product.images.length) ? [...product.images] : (product.image_url ? [product.image_url] : []);
+        document.getElementById('modal-main-img').src = currentProductImages[0] || 'https://placehold.co/600x800/e2e2e2/black?text=COLONIAL';
+        const thumbsContainer = document.getElementById('modal-thumbnails');
+        thumbsContainer.innerHTML = currentProductImages.slice(1).map(img => `<img src="${img}" class="thumbnail-img w-16 h-20 object-cover rounded cursor-pointer border-2 border-transparent" onclick="changeMainImage('${img}', this)">`).join('');
+        document.querySelectorAll('#size-options .size-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelector('#size-options .size-btn[data-size="M"]').classList.add('active');
+        selectedSize = 'M';
+        const colors = product.colors || [];
+        const swatchDiv = document.getElementById('color-swatches');
+        if (colors.length === 0) {
+            swatchDiv.innerHTML = '<p class="text-gray-400 text-sm">No colour options</p>';
+            selectedColor = { hex: '', name: 'Default' };
+            document.getElementById('selected-color-name').innerText = '';
+        } else {
+            swatchDiv.innerHTML = colors.map(c => `<div class="color-swatch" style="background-color: ${c};" data-color-hex="${c}" data-color-name="${c === '#000000' ? 'Black' : c === '#ffffff' ? 'White' : c}"></div>`).join('');
+            const firstSwatch = document.querySelector('.color-swatch');
+            if (firstSwatch) {
+                firstSwatch.classList.add('selected');
+                selectedColor = { hex: firstSwatch.dataset.colorHex, name: firstSwatch.dataset.colorName };
+                document.getElementById('selected-color-name').innerText = `Selected: ${selectedColor.name}`;
+            }
+            document.querySelectorAll('.color-swatch').forEach(sw => {
+                sw.addEventListener('click', () => {
+                    document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
+                    sw.classList.add('selected');
+                    selectedColor = { hex: sw.dataset.colorHex, name: sw.dataset.colorName };
+                    document.getElementById('selected-color-name').innerText = `Selected: ${selectedColor.name}`;
+                });
+            });
+        }
+        const isInWishlist = wishlist.includes(product.id);
+        const heartIcon = document.getElementById('modal-wishlist-btn')?.querySelector('i');
+        if (heartIcon) {
+            if (isInWishlist) heartIcon.classList.add('fill-red-500');
+            else heartIcon.classList.remove('fill-red-500');
+        }
+        await loadReviews(product.id);
+        document.getElementById('product-modal').style.display = 'flex';
+    }
+    function changeMainImage(url, el) { document.getElementById('modal-main-img').src = url; document.querySelectorAll('.thumbnail-img').forEach(img => img.classList.remove('border-black', 'border-2')); el.classList.add('border-black', 'border-2'); }
+    function openLightbox() {
+        if (!currentProductImages.length) return;
+        let idx = 0;
+        const modal = document.createElement('div');
+        modal.className = 'fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4';
+        modal.innerHTML = `<button class="absolute top-4 right-4 text-white text-2xl z-10" onclick="this.parentElement.remove()">✕</button><button class="absolute left-4 top-1/2 -translate-y-1/2 bg-white/20 p-2 rounded-full text-white" id="lightbox-prev">◀</button><img id="lightbox-img" class="max-h-[90vh] max-w-[90vw] object-contain"><button class="absolute right-4 top-1/2 -translate-y-1/2 bg-white/20 p-2 rounded-full text-white" id="lightbox-next">▶</button>`;
+        document.body.appendChild(modal);
+        const imgEl = document.getElementById('lightbox-img');
+        imgEl.src = currentProductImages[0];
+        document.getElementById('lightbox-prev').onclick = () => { idx = (idx - 1 + currentProductImages.length) % currentProductImages.length; imgEl.src = currentProductImages[idx]; };
+        document.getElementById('lightbox-next').onclick = () => { idx = (idx + 1) % currentProductImages.length; imgEl.src = currentProductImages[idx]; };
+    }
+    function closeProductModal() { document.getElementById('product-modal').style.display = 'none'; }
+    function addCurrentToCart() { if (currentProduct) addToCart(currentProduct, 1); closeProductModal(); }
+
+    // Review stars handling
+    const reviewStars = document.querySelectorAll('#review-stars .star');
+    reviewStars.forEach(star => {
+        star.addEventListener('mouseenter', function() { highlightStars(parseInt(this.dataset.rating)); });
+        star.addEventListener('mouseleave', function() { highlightStars(currentRating); });
+        star.addEventListener('click', function() { currentRating = parseInt(this.dataset.rating); highlightStars(currentRating); });
+    });
+    function highlightStars(rating) {
+        reviewStars.forEach((star, idx) => {
+            if (idx < rating) star.classList.add('active');
+            else star.classList.remove('active');
+        });
+    }
+    document.getElementById('submit-review-btn')?.addEventListener('click', async () => {
+        if (!currentProduct) return;
+        const comment = document.getElementById('review-comment').value.trim();
+        if (currentRating === 0) { alert('Please select a rating'); return; }
+        await submitReview(currentProduct.id, currentRating, comment);
+        document.getElementById('review-comment').value = '';
+        currentRating = 0;
+        highlightStars(0);
+    });
+    document.getElementById('modal-wishlist-btn')?.addEventListener('click', () => {
+        if (currentProduct) toggleWishlist(currentProduct.id);
+    });
+
+    // ------------------- Payment method toggle -------------------
+    const paymentRadios = document.querySelectorAll('input[name="payment_method"]');
+    const manualDiv = document.getElementById('manual-payment-details');
+    if (paymentRadios.length && manualDiv) {
+        paymentRadios.forEach(radio => {
+            radio.addEventListener('change', () => {
+                if (document.querySelector('input[name="payment_method"]:checked')?.value === 'bkash') {
+                    manualDiv.classList.remove('hidden');
+                } else {
+                    manualDiv.classList.add('hidden');
+                }
+            });
+        });
+    }
+
+    // ------------------- Coupon & Checkout -------------------
+    document.getElementById('apply-coupon-btn')?.addEventListener('click', async () => {
+        const code = document.getElementById('coupon-code').value.trim();
+        if (!code) return;
+        const subtotal = cart.reduce((s,i) => s + (i.price * i.quantity), 0);
+        try {
+            const res = await fetch('/api/validate-coupon', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code, cartTotal: subtotal }) });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error);
+            appliedCoupon = code; couponDiscount = data.discount;
+            document.getElementById('coupon-feedback').innerHTML = `<span class="text-green-600">Coupon applied! You save BDT ${couponDiscount}</span>`;
+            updateCartUI();
+        } catch(err) { document.getElementById('coupon-feedback').innerHTML = `<span class="text-red-600">${err.message}</span>`; }
+    });
+    function openCheckout() { if (!cart.length) { alert('Your cart is empty.'); return; } document.getElementById('checkout-modal').style.display = 'flex'; }
+    function closeCheckout() { document.getElementById('checkout-modal').style.display = 'none'; }
+    async function placeOrder() {
+        // Double-check cart is not empty
+        if (!cart.length) {
+            alert('Your cart is empty. Add some products first.');
+            return;
+        }
+
+        const name = document.getElementById('customer-name').value.trim();
+        const email = document.getElementById('customer-email').value.trim();
+        const phone = document.getElementById('customer-phone').value.trim();
+        const address = document.getElementById('shipping-address').value.trim();
+        if (!name || !email) { alert('Name and email are required'); return; }
+
+        const payment_method = document.querySelector('input[name="payment_method"]:checked')?.value || 'cash_on_delivery';
+        let transaction_id = null;
+        if (payment_method === 'bkash') {
+            transaction_id = document.getElementById('transaction-id')?.value.trim();
+            if (!transaction_id) {
+                alert('Please enter the transaction ID after sending payment to +8801871330654.');
+                return;
+            }
+        }
+
+        // Build items from cart – each cart item already has size and color
+        const items = cart.map(i => ({
+            id: i.id,
+            name: i.name,
+            price: i.price,
+            quantity: i.quantity,
+            size: i.size || 'M',
+            color: i.color || 'Default',
+            image_url: i.image_url || ''
+        }));
+
+        // Log items to console for debugging
+        console.log('📦 Order items:', items);
+
+        const subtotal = cart.reduce((s,i) => s + (i.price * i.quantity), 0);
+        const finalAmount = Math.max(0, subtotal - couponDiscount);
+
+        const orderData = {
+            customer_name: name,
+            customer_email: email,
+            customer_phone: phone,
+            shipping_address: address,
+            total_amount: subtotal,
+            discount_applied: couponDiscount,
+            final_amount: finalAmount,
+            items: items,
+            coupon_code: appliedCoupon,
+            notes: '',
+            payment_method: payment_method,
+            transaction_id: transaction_id
+        };
+
+        try {
+            const headers = { 'Content-Type': 'application/json' };
+            if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
+            const res = await fetch('/api/orders', { method: 'POST', headers, body: JSON.stringify(orderData) });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Order failed');
+
+            let successMsg = 'Order placed successfully! ';
+            if (payment_method === 'bkash') {
+                successMsg += 'Your payment is pending verification. You will be notified once confirmed.';
+            } else {
+                successMsg += 'You will pay upon delivery.';
+            }
+            alert(successMsg);
+
+            cart = []; couponDiscount = 0; appliedCoupon = null; saveCart();
+            closeCheckout(); toggleCart();
+            // Reset form fields
+            document.getElementById('customer-name').value = '';
+            document.getElementById('customer-email').value = '';
+            document.getElementById('customer-phone').value = '';
+            document.getElementById('shipping-address').value = '';
+            document.getElementById('coupon-code').value = '';
+            document.getElementById('coupon-feedback').innerHTML = '';
+            if (document.getElementById('transaction-id')) document.getElementById('transaction-id').value = '';
+            const codRadio = document.querySelector('input[name="payment_method"][value="cash_on_delivery"]');
+            if (codRadio) codRadio.checked = true;
+            if (manualDiv) manualDiv.classList.add('hidden');
+        } catch(err) {
+            alert(err.message);
+        }
+    }
+
+    // ------------------- Event Listeners -------------------
+    document.getElementById('search-input')?.addEventListener('input', (e) => { currentFilters.q = e.target.value; loadProducts(true); });
+    document.getElementById('category-filter')?.addEventListener('change', (e) => { currentFilters.category = e.target.value; loadProducts(true); });
+    document.getElementById('sort-select')?.addEventListener('change', (e) => { currentFilters.sort = e.target.value; loadProducts(true); });
+    document.getElementById('load-more')?.addEventListener('click', () => { currentPage++; loadProducts(false); });
+    document.addEventListener('click', (e) => {
+        if (e.target.classList && e.target.classList.contains('size-btn')) {
+            document.querySelectorAll('#size-options .size-btn').forEach(btn => btn.classList.remove('active'));
+            e.target.classList.add('active');
+            selectedSize = e.target.getAttribute('data-size');
+        }
+    });
+    document.getElementById('prev-btn')?.addEventListener('click', () => prevSlide());
+    document.getElementById('next-btn')?.addEventListener('click', () => nextSlide());
+
+    // ------------------- Initialization -------------------
+    loadCategories();
+    loadProducts();
+    loadCarouselProducts();
+    updateCartUI();
+    loadCurrentUser();
+</script>
+</body>
+</html>

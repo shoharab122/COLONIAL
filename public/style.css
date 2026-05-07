@@ -1,0 +1,510 @@
+/* ============================================
+   COLONIAL - Cream Color Scheme
+   Fully Responsive | Mobile & Laptop Optimized
+   ============================================ */
+
+/* ---------- CSS Variables (Cream Palette) ---------- */
+:root {
+  --colonial-bg: #FDFBF7;      /* Main background */
+  --colonial-card: #FFFCF8;    /* Card background */
+  --colonial-border: #E8E2D5;  /* Borders, dividers */
+  --colonial-hover: #F5EFE6;   /* Hover states */
+  --colonial-accent: #A28B6F;  /* Buttons, links */
+  --colonial-accent-dark: #5C4B3A; /* Darker hover */
+  --colonial-text: #3E362E;    /* Primary text */
+  --colonial-text-muted: #7A6E5D; /* Secondary text */
+  --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.07);
+}
+
+/* ---------- Global Reset & Typography ---------- */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: var(--colonial-bg);
+  color: var(--colonial-text);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+.font-serif {
+  font-family: 'Playfair Display', serif;
+}
+
+/* ---------- Custom Scrollbar (cream) ---------- */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--colonial-border);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--colonial-accent);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--colonial-accent-dark);
+}
+
+/* ---------- Header & Navigation ---------- */
+header {
+  transition: var(--transition-smooth);
+  backdrop-filter: blur(8px);
+  background-color: rgba(253, 251, 247, 0.95);
+  border-bottom: 1px solid var(--colonial-border);
+}
+.header-scrolled {
+  background: rgba(253, 251, 247, 0.98);
+  box-shadow: var(--shadow-md);
+}
+
+.nav-link {
+  position: relative;
+  padding-bottom: 4px;
+}
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background: currentColor;
+  transition: width 0.3s ease;
+}
+.nav-link:hover::after,
+.nav-link.active::after {
+  width: 100%;
+}
+
+/* ---------- Hero Slider ---------- */
+.hero-slider {
+  position: relative;
+  width: 100%;
+  height: 90vh;
+  min-height: 500px;
+  overflow: hidden;
+}
+.slide {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 1.2s ease-in-out;
+  z-index: 1;
+}
+.slide.active {
+  opacity: 1;
+  z-index: 2;
+}
+.slide img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.slide-content {
+  position: absolute;
+  bottom: 15%;
+  left: 5%;
+  z-index: 10;
+  color: white;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  max-width: 80%;
+}
+.slide-content h2 {
+  font-size: clamp(2.5rem, 8vw, 5rem);
+  line-height: 1.1;
+}
+.slider-control {
+  background: rgba(0,0,0,0.4);
+  backdrop-filter: blur(4px);
+  transition: var(--transition-smooth);
+}
+.slider-control:hover {
+  background: var(--colonial-accent);
+  color: white;
+}
+.slide-dot {
+  width: 40px;
+  height: 2px;
+  background: rgba(255,255,255,0.4);
+  transition: all 0.2s;
+  cursor: pointer;
+}
+.slide-dot.active {
+  background: white;
+  width: 60px;
+}
+
+/* ---------- Product Cards ---------- */
+.product-card {
+  background: var(--colonial-card);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--colonial-border);
+}
+.product-card:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-lg);
+}
+.product-card img {
+  transition: transform 0.5s ease;
+}
+.product-card:hover img {
+  transform: scale(1.03);
+}
+.product-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to top, rgba(62, 54, 46, 0.8), transparent);
+  padding: 1.5rem;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.product-card:hover .product-overlay {
+  opacity: 1;
+}
+.quick-add {
+  transform: translateY(20px);
+  transition: transform 0.3s, opacity 0.3s;
+  opacity: 0;
+}
+.product-card:hover .quick-add {
+  transform: translateY(0);
+  opacity: 1;
+}
+.badge-new,
+.badge-sale,
+.badge-limited {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: var(--colonial-card);
+  color: var(--colonial-text);
+  padding: 4px 10px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  border-radius: 20px;
+  box-shadow: var(--shadow-sm);
+}
+.badge-sale {
+  background: #dc2626;
+  color: white;
+}
+.badge-limited {
+  background: var(--colonial-accent);
+  color: white;
+}
+
+/* ---------- Cart Drawer ---------- */
+.cart-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 100%;
+  max-width: 480px;
+  height: 100vh;
+  background: var(--colonial-card);
+  z-index: 1000;
+  transform: translateX(100%);
+  transition: transform 0.4s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+  box-shadow: -5px 0 30px rgba(0,0,0,0.08);
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid var(--colonial-border);
+}
+.cart-drawer.open {
+  transform: translateX(0);
+}
+.cart-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(62, 54, 46, 0.6);
+  z-index: 999;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s;
+}
+.cart-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+.cart-item {
+  border-bottom: 1px solid var(--colonial-border);
+  padding: 1rem 0;
+}
+.cart-item img {
+  width: 70px;
+  height: 90px;
+  object-fit: cover;
+  background: var(--colonial-hover);
+  border-radius: 8px;
+}
+.quantity-btn {
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--colonial-border);
+  background: var(--colonial-card);
+  cursor: pointer;
+  transition: all 0.2s;
+  border-radius: 20px;
+}
+.quantity-btn:hover {
+  background: var(--colonial-accent);
+  color: white;
+  border-color: var(--colonial-accent);
+}
+
+/* ---------- Filter Buttons ---------- */
+.filter-btn {
+  position: relative;
+  padding: 0.5rem 0;
+  margin-right: 1.5rem;
+  font-size: 0.75rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--colonial-text-muted);
+  transition: color 0.2s;
+}
+.filter-btn.active {
+  color: var(--colonial-text);
+}
+.filter-btn.active::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: var(--colonial-accent);
+}
+.filter-btn:hover {
+  color: var(--colonial-text);
+}
+
+/* ---------- Size Buttons (Product Modal) ---------- */
+.size-btn {
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--colonial-border);
+  background: var(--colonial-card);
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  border-radius: 30px;
+}
+.size-btn.active,
+.size-btn:hover {
+  background: var(--colonial-accent);
+  color: white;
+  border-color: var(--colonial-accent);
+}
+
+/* ---------- Animations ---------- */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.fade-in-up {
+  animation: fadeInUp 0.6s ease forwards;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+.loader {
+  border: 2px solid var(--colonial-border);
+  border-top: 2px solid var(--colonial-accent);
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  animation: spin 0.8s linear infinite;
+}
+
+/* ---------- Newsletter ---------- */
+.newsletter-input {
+  background: rgba(255,255,255,0.1);
+  border: 1px solid var(--colonial-border);
+  transition: all 0.2s;
+  color: var(--colonial-text);
+}
+.newsletter-input:focus {
+  outline: none;
+  border-color: var(--colonial-accent);
+  background: rgba(255,255,255,0.2);
+}
+
+/* ---------- Admin Panel Specific (cream theme) ---------- */
+.admin-card {
+  background: var(--colonial-card);
+  border-radius: 12px;
+  padding: 1rem;
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition-smooth);
+  border: 1px solid var(--colonial-border);
+}
+.admin-card:hover {
+  box-shadow: var(--shadow-md);
+}
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.admin-table th,
+.admin-table td {
+  padding: 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid var(--colonial-border);
+}
+.admin-table th {
+  font-weight: 600;
+  background: var(--colonial-hover);
+}
+
+/* ---------- Utility Classes ---------- */
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.text-balance {
+  text-wrap: balance;
+}
+
+/* ========== RESPONSIVE FIXES (Mobile & Laptop) ========== */
+
+/* Tablet & Mobile (max-width: 1024px) */
+@media (max-width: 1024px) {
+  .hero-slider {
+    height: 70vh;
+    min-height: 400px;
+  }
+  .slide-content {
+    bottom: 10%;
+    left: 5%;
+  }
+  .product-card:hover {
+    transform: none; /* Disable hover lift on touch devices */
+  }
+  .product-card:hover img {
+    transform: none;
+  }
+}
+
+/* Mobile (max-width: 768px) */
+@media (max-width: 768px) {
+  :root {
+    --shadow-lg: 0 5px 10px -3px rgba(0, 0, 0, 0.05);
+  }
+  body {
+    font-size: 14px;
+  }
+  .cart-drawer {
+    max-width: 100%;
+    width: 100%;
+  }
+  .size-btn {
+    width: 38px;
+    height: 38px;
+    font-size: 0.75rem;
+  }
+  .quantity-btn {
+    width: 32px;
+    height: 32px;
+  }
+  .badge-new, .badge-sale, .badge-limited {
+    font-size: 8px;
+    padding: 3px 8px;
+  }
+  /* Improve touch targets */
+  button, 
+  .size-btn,
+  .quantity-btn,
+  .filter-btn,
+  a {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  /* Prevent input zoom on iOS */
+  input, select, textarea {
+    font-size: 16px;
+  }
+}
+
+/* Small mobile (max-width: 480px) */
+@media (max-width: 480px) {
+  .hero-slider {
+    height: 60vh;
+    min-height: 320px;
+  }
+  .slide-content h2 {
+    font-size: clamp(1.8rem, 6vw, 2.5rem);
+  }
+  .product-card .p-4 {
+    padding: 0.75rem;
+  }
+}
+
+/* ---------- COLONIAL Cream Overrides for Tailwind ---------- */
+/* Override Tailwind's default backgrounds */
+.bg-white, .bg-gray-50, .bg-gray-100, .bg-gray-200 {
+  background-color: var(--colonial-card) !important;
+}
+.bg-black {
+  background-color: var(--colonial-accent) !important;
+}
+.bg-black:hover {
+  background-color: var(--colonial-accent-dark) !important;
+}
+.text-gray-600, .text-gray-500, .text-gray-400 {
+  color: var(--colonial-text-muted) !important;
+}
+.text-black, .text-gray-900, .text-gray-800, .text-gray-700 {
+  color: var(--colonial-text) !important;
+}
+.border, .border-gray-300, .border-gray-200 {
+  border-color: var(--colonial-border) !important;
+}
+input, select, textarea {
+  background-color: var(--colonial-card);
+  border-color: var(--colonial-border);
+  color: var(--colonial-text);
+}
+input:focus, select:focus, textarea:focus {
+  border-color: var(--colonial-accent);
+  outline: none;
+  box-shadow: 0 0 0 2px var(--colonial-accent);
+}
