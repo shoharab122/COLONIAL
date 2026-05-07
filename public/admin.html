@@ -207,9 +207,7 @@
 <!-- ==================== FOOTER SECTION (Admin Panel) ==================== -->
 <footer class="bg-black text-white/80 mt-12 py-8 px-4 md:px-6 lg:px-12 border-t border-gray-800">
     <div class="max-w-7xl mx-auto">
-        <!-- Responsive grid: stacks on mobile, 4 columns on medium screens and up -->
         <div class="grid grid-cols-1 md:grid-cols-4 gap-8 text-center md:text-left">
-            <!-- Contact / Brand Column -->
             <div>
                 <h3 class="font-serif text-xl mb-3 text-white">COLONIAL</h3>
                 <p class="text-sm">Timeless elegance for the modern wardrobe.</p>
@@ -220,8 +218,6 @@
                     <p>📍 Chittagong, Bangladesh</p>
                 </div>
             </div>
-
-            <!-- Quick Links Column -->
             <div>
                 <h4 class="font-semibold text-white mb-3">Quick Links</h4>
                 <ul class="space-y-2 text-sm">
@@ -230,8 +226,6 @@
                     <li><a href="#" onclick="document.getElementById('tab-orders-btn').click();" class="inline-block py-1 hover:underline">Orders</a></li>
                 </ul>
             </div>
-
-            <!-- Legal Column -->
             <div>
                 <h4 class="font-semibold text-white mb-3">Legal</h4>
                 <ul class="space-y-2 text-sm">
@@ -239,8 +233,6 @@
                     <li><a href="#" id="footer-privacy-link" class="inline-block py-1 hover:underline">Privacy Policy</a></li>
                 </ul>
             </div>
-
-            <!-- Social Media Column -->
             <div>
                 <h4 class="font-semibold text-white mb-3">Follow Us</h4>
                 <div class="flex justify-center md:justify-start space-x-6">
@@ -253,8 +245,6 @@
                 </div>
             </div>
         </div>
-
-        <!-- Copyright -->
         <div class="border-t border-gray-800 mt-8 pt-6 text-center text-xs text-white/50">
             &copy; 2026 COLONIAL. All rights reserved.
         </div>
@@ -305,7 +295,6 @@
         return res;
     }
 
-    // ---------------- Image gallery ----------------
     function renderImageGallery() {
         const container = document.getElementById('image-gallery');
         if (!container) return;
@@ -387,7 +376,6 @@
         }
     });
 
-    // ---------------- SSE ----------------
     function setSSEStatus(connected) {
         const span = document.getElementById('sse-status');
         if (connected) {
@@ -435,7 +423,6 @@
         };
     }
 
-    // ---------------- Stats ----------------
     async function loadStats() {
         try {
             const res = await authFetch('/api/admin/stats');
@@ -453,7 +440,6 @@
         }
     }
 
-    // ---------------- Products ----------------
     async function loadProducts() {
         try {
             const res = await authFetch('/api/products');
@@ -533,7 +519,6 @@
         }
     };
 
-    // ---------- FIXED PRODUCT FORM SUBMIT HANDLER ----------
     document.getElementById('product-form')?.addEventListener('submit', async (e) => {
         e.preventDefault();
         const id = document.getElementById('product-id').value;
@@ -564,10 +549,9 @@
                 } catch (err) {}
                 throw new Error(errorMsg);
             }
-            // Success
             closeProductModal();
-            await loadProducts(); // refresh list
-            await loadStats();   // refresh stats
+            await loadProducts();
+            await loadStats();
             alert('✅ Product saved successfully!');
         } catch (err) {
             alert('❌ Failed to save product:\n' + err.message);
@@ -578,7 +562,7 @@
     document.getElementById('product-search')?.addEventListener('input', () => renderProducts());
     document.getElementById('add-product-btn')?.addEventListener('click', () => openProductModal());
 
-    // ---------------- Orders with payment info ----------------
+    // ---------------- Orders with payment info and customer details ----------------
     async function loadOrders() {
         try {
             const res = await authFetch('/api/admin/orders');
@@ -635,6 +619,8 @@
                             <div>
                                 <p class="font-semibold">Order #${escapeHtml(o.order_number || o.id)}</p>
                                 <p class="text-sm text-gray-600">${escapeHtml(o.customer_name)} (${escapeHtml(o.customer_email)})</p>
+                                <p class="text-sm text-gray-600">📞 Phone: ${escapeHtml(o.customer_phone || '—')}</p>
+                                <p class="text-sm text-gray-600">📍 Address: ${escapeHtml(o.shipping_address || '—')}</p>
                                 <p class="text-sm text-gray-600">Total: BDT ${parseFloat(o.final_amount || o.total_amount || 0).toFixed(2)}</p>
                                 <p class="text-xs text-gray-400">${formatDate(o.created_at)}</p>
                             </div>
@@ -682,7 +668,6 @@
         catch(err) { alert('Delete failed'); }
     };
 
-    // Mark order as paid (payment verification)
     window.markOrderPaid = async (orderId) => {
         if (!confirm('Confirm payment received? This will mark the order as PAID.')) return;
         try {
@@ -702,7 +687,6 @@
         }
     };
 
-    // ---------------- Reviews ----------------
     async function loadReviews() {
         try {
             const res = await authFetch('/api/admin/reviews');
@@ -748,7 +732,6 @@
 
     document.getElementById('review-search')?.addEventListener('input', () => renderReviews());
 
-    // ---------------- Wishlists ----------------
     async function loadWishlists() {
         try {
             const res = await authFetch('/api/admin/wishlists');
@@ -767,7 +750,7 @@
         }
         container.innerHTML = `
             <table class="wishlist-table w-full bg-white rounded-xl overflow-hidden">
-                <thead><tr><th>Image</th><th>Product</th><th>User</th><th>Price (BDT)</th><th>Date Added</th><th>Actions</th></tr></thead>
+                <thead><tr><th>Image</th><th>Product</th><th>User</th><th>Price (BDT)</th><th>Date Added</th><th>Actions</th><tr></thead>
                 <tbody>
                     ${filtered.map(w => `
                         <tr>
@@ -794,7 +777,6 @@
 
     document.getElementById('wishlist-search')?.addEventListener('input', () => renderWishlists());
 
-    // ---------------- Tab switching ----------------
     function showTab(tab) {
         const tabs = ['products', 'orders', 'reviews', 'wishlists', 'preview'];
         tabs.forEach(t => {
@@ -820,7 +802,6 @@
     document.getElementById('open-full-preview').addEventListener('click', () => window.open('/', '_blank'));
     document.getElementById('logout-btn').addEventListener('click', () => { if(eventSource) eventSource.close(); localStorage.removeItem('amoura_admin_token'); location.reload(); });
 
-    // ---------------- Auto login and init ----------------
     if (authToken) {
         fetch('/api/auth/me', { headers: { 'Authorization': `Bearer ${authToken}` } })
             .then(res => { if(res.ok) { document.getElementById('login-screen').classList.add('hidden'); document.getElementById('admin-panel').classList.remove('hidden'); loadStats(); loadProducts(); loadOrders(); initSSE(); } else { localStorage.removeItem('amoura_admin_token'); document.getElementById('login-screen').classList.remove('hidden'); } })
@@ -845,7 +826,6 @@
     document.querySelectorAll('.close-modal-btn').forEach(btn => btn.addEventListener('click', closeProductModal));
     window.addEventListener('click', (e) => { if (e.target === document.getElementById('product-modal')) closeProductModal(); });
 
-    // Add footer modal event listeners for terms & privacy
     function openTermsModal() {
         alert('Terms & Conditions would open here. Implement a modal similar to the storefront if needed.');
     }
