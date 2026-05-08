@@ -74,7 +74,6 @@ function requireAdmin(req, res, next) {
 }
 
 // ------------------- IMAGE UPLOAD (Cloudinary) -------------------
-// Use memory storage so we can pass buffer to Cloudinary
 const storage = multer.memoryStorage();
 const fileFilter = (req, file, cb) => {
   const allowed = /jpeg|jpg|png|gif|webp/;
@@ -87,19 +86,14 @@ const upload = multer({ storage, limits: { fileSize: 5 * 1024 * 1024 }, fileFilt
 
 app.post('/api/upload', authenticateToken, requireAdmin, upload.single('image'), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
-
   try {
-    // Convert buffer to base64 data URI
     const b64 = Buffer.from(req.file.buffer).toString('base64');
     const dataURI = `data:${req.file.mimetype};base64,${b64}`;
-
-    // Upload to Cloudinary
     const result = await cloudinary.uploader.upload(dataURI, {
       folder: 'colonial_products',
       use_filename: true,
       unique_filename: true
     });
-
     res.json({ imageUrl: result.secure_url });
   } catch (err) {
     console.error('Cloudinary upload error:', err);
@@ -172,13 +166,13 @@ function safeParseImages(product) {
   return [];
 }
 
-// ------------------- PRODUCTS (public) -------------------
+// ------------------- PRODUCTS (public) - FIXED DIVISION BY ZERO -------------------
 app.get('/api/products', async (req, res) => {
   try {
     const { rows } = await pool.query(`
       SELECT *, 
              (price - COALESCE(discount_amount, 0)) as final_price,
-             ROUND(((discount_amount / price) * 100), 0) as discount_percent
+             CASE WHEN price > 0 THEN ROUND(((discount_amount / price) * 100), 0) ELSE 0 END as discount_percent
       FROM products 
       WHERE is_active = true 
       ORDER BY created_at DESC
@@ -201,7 +195,7 @@ app.get('/api/products/search', async (req, res) => {
   let sql = `
     SELECT *, 
            (price - COALESCE(discount_amount, 0)) as final_price,
-           ROUND(((discount_amount / price) * 100), 0) as discount_percent
+           CASE WHEN price > 0 THEN ROUND(((discount_amount / price) * 100), 0) ELSE 0 END as discount_percent
     FROM products 
     WHERE is_active = true
   `;
@@ -241,7 +235,7 @@ app.get('/api/products/:id', async (req, res) => {
     const { rows } = await pool.query(`
       SELECT *, 
              (price - COALESCE(discount_amount, 0)) as final_price,
-             ROUND(((discount_amount / price) * 100), 0) as discount_percent,
+             CASE WHEN price > 0 THEN ROUND(((discount_amount / price) * 100), 0) ELSE 0 END as discount_percent,
              COALESCE(avg_rating, 0) as avg_rating,
              COALESCE(review_count, 0) as review_count
       FROM products 
@@ -520,7 +514,7 @@ app.get('/api/wishlist', authenticateToken, async (req, res) => {
     const { rows } = await pool.query(
       `SELECT p.*, 
               (p.price - COALESCE(p.discount_amount, 0)) as final_price,
-              ROUND(((p.discount_amount / p.price) * 100), 0) as discount_percent
+              CASE WHEN price > 0 THEN ROUND(((p.discount_amount / p.price) * 100), 0) ELSE 0 END as discount_percent
        FROM wishlist w
        JOIN products p ON w.product_id = p.id
        WHERE w.user_id = $1
