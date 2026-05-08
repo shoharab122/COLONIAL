@@ -27,11 +27,19 @@
         .payment-awaiting { background: #fed7aa; color: #9a3412; }
         .payment-failed { background: #fee2e2; color: #991b1b; }
 
-        /* Mobile tap target enhancement for footer links */
         footer a {
             min-height: 44px;
             display: inline-flex;
             align-items: center;
+        }
+        /* Modal base */
+        .modal {
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal.active {
+            display: flex;
         }
     </style>
 </head>
@@ -129,7 +137,6 @@
         <input type="text" id="customer-phone" placeholder="Phone (optional)" class="w-full border rounded-lg p-2 mb-3">
         <textarea id="shipping-address" placeholder="Shipping address" class="w-full border rounded-lg p-2 mb-3"></textarea>
 
-        <!-- Payment Method Selection -->
         <div class="mb-3">
             <label class="block text-sm font-medium mb-1">Payment Method</label>
             <div class="flex gap-4">
@@ -142,7 +149,6 @@
             </div>
         </div>
 
-        <!-- Manual Payment Details (bKash/Nagad) -->
         <div id="manual-payment-details" class="hidden mb-3 p-3 bg-gray-50 rounded-lg">
             <p class="text-sm font-medium">Send payment to:</p>
             <p class="text-lg font-mono font-bold">+8801871330654 (bKash/Nagad)</p>
@@ -248,23 +254,31 @@
     </div>
 </div>
 
-<!-- ==================== OPTIMIZED MOBILE FOOTER WITH SOCIAL MEDIA ==================== -->
+<!-- ==================== FOOTER ==================== -->
 <footer class="bg-black text-white/80 mt-16 py-8 px-4 md:px-6 lg:px-12 border-t border-gray-800">
     <div class="max-w-7xl mx-auto">
-        <!-- Links row – wraps on mobile -->
-        <div class="flex flex-wrap justify-center gap-x-6 gap-y-3 text-sm text-center">
-            <a href="#" class="hover:underline inline-block">Size Guide</a>
-            <a href="#" class="hover:underline inline-block">Fabric Care</a>
-            <a href="#" class="hover:underline inline-block">Delivery & Return</a>
-            <a href="#" class="hover:underline inline-block">Billing</a>
-            <a href="#" class="hover:underline inline-block">Terms</a>
-            <a href="#" class="hover:underline inline-block">Showrooms</a>
-            <a href="#" class="hover:underline inline-block">Contact</a>
-            <a href="#" class="hover:underline inline-block">About Us</a>
-            <a href="#" class="hover:underline inline-block">Lifestyle Card</a>
-            <a href="#" class="hover:underline inline-block">Offers</a>
+        <!-- Contact row -->
+        <div class="text-center space-y-2 text-sm">
+            <p>📧 <a href="mailto:Colonialbusinessltd@gmail.com" class="hover:underline">Colonialbusinessltd@gmail.com</a></p>
+            <p>📞 <a href="tel:+8801871330654" class="hover:underline">+880 18713-330654</a> (bKash/Nagad)</p>
+            <p>📍 Chittagong, Bangladesh</p>
         </div>
-        <!-- Social icons (optional – keep or remove) -->
+
+        <!-- Links row – all working modals -->
+        <div class="flex flex-wrap justify-center gap-x-6 gap-y-3 text-sm text-center mt-6 pt-6 border-t border-gray-800">
+            <a href="#" id="size-guide-link" class="hover:underline inline-block">Size Guide</a>
+            <a href="#" id="fabric-care-link" class="hover:underline inline-block">Fabric Care</a>
+            <a href="#" id="delivery-return-link" class="hover:underline inline-block">Delivery & Return</a>
+            <a href="#" id="billing-link" class="hover:underline inline-block">Billing</a>
+            <a href="#" id="footer-terms-link" class="hover:underline inline-block">Terms & Conditions</a>
+            <a href="#" id="contact-link" class="hover:underline inline-block">Contact</a>
+            <a href="#" id="about-link" class="hover:underline inline-block">About Us</a>
+            <a href="#" id="lifestyle-link" class="hover:underline inline-block">Lifestyle Card</a>
+            <a href="#" id="offers-link" class="hover:underline inline-block">Offers</a>
+            <a href="#" id="footer-privacy-link" class="hover:underline inline-block">Privacy Policy</a>
+        </div>
+
+        <!-- Social icons -->
         <div class="flex justify-center gap-6 mt-6">
             <a href="https://www.facebook.com/share/18PUUso8Pp/" target="_blank" rel="noopener noreferrer" class="text-white/80 hover:text-white transition-colors">
                 <i data-lucide="facebook" class="w-5 h-5"></i>
@@ -273,6 +287,7 @@
                 <i data-lucide="instagram" class="w-5 h-5"></i>
             </a>
         </div>
+
         <!-- Copyright -->
         <div class="text-center text-xs text-white/50 mt-6 pt-6 border-t border-gray-800">
             &copy; 2026 COLONIAL. All rights reserved.
@@ -280,20 +295,238 @@
     </div>
 </footer>
 
+<!-- ==================== ALL MODALS ==================== -->
+
+<!-- Terms & Conditions Modal -->
+<div id="terms-modal" class="fixed inset-0 bg-black/70 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl max-w-2xl w-full mx-auto p-6 max-h-[80vh] overflow-auto text-gray-800">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-2xl font-serif">Terms & Conditions</h3>
+            <button onclick="closeTermsModal()" class="hover:opacity-70"><i data-lucide="x" class="w-5 h-5"></i></button>
+        </div>
+        <div class="space-y-4 text-sm">
+            <p><strong>1. General</strong><br>By accessing or using the COLONIAL website, you agree to be bound by these Terms & Conditions.</p>
+            <p><strong>2. Products & Pricing</strong><br>All product descriptions, prices, and availability are subject to change without notice. We reserve the right to limit quantities.</p>
+            <p><strong>3. Orders & Payment</strong><br>Orders are confirmed only after payment verification. For bKash/Nagad orders, payment status must be verified by our admin before shipment.</p>
+            <p><strong>4. Shipping & Delivery</strong><br>We ship within Bangladesh. Delivery times are estimates. Risk of loss passes to you upon delivery.</p>
+            <p><strong>5. Returns & Refunds</strong><br>Items must be returned unused within 7 days of delivery. Refunds will be processed after inspection.</p>
+            <p><strong>6. Intellectual Property</strong><br>All content (logos, images, text) is property of COLONIAL and may not be used without permission.</p>
+            <p><strong>7. Contact</strong><br>For any questions, email us at Colonialbusinessltd@gmail.com or call +8801643425517.</p>
+            <p><strong>8. Governing Law</strong><br>These terms are governed by the laws of Bangladesh.</p>
+        </div>
+        <button onclick="closeTermsModal()" class="mt-6 w-full bg-black text-white py-2 rounded-lg">Close</button>
+    </div>
+</div>
+
+<!-- Privacy Policy Modal -->
+<div id="privacy-modal" class="fixed inset-0 bg-black/70 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl max-w-2xl w-full mx-auto p-6 max-h-[80vh] overflow-auto text-gray-800">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-2xl font-serif">Privacy Policy</h3>
+            <button onclick="closePrivacyModal()" class="hover:opacity-70"><i data-lucide="x" class="w-5 h-5"></i></button>
+        </div>
+        <div class="space-y-4 text-sm">
+            <p><strong>Information We Collect</strong><br>We collect name, email, shipping address, phone number, and order details to process your purchases.</p>
+            <p><strong>How We Use Your Information</strong><br>Your data is used solely for order fulfillment, customer support, and improving our service. We do not sell your personal information.</p>
+            <p><strong>Payment Security</strong><br>All online payments are processed through secure gateways. We do not store full payment credentials.</p>
+            <p><strong>Cookies</strong><br>We use cookies to remember cart items and preferences. You may disable cookies in your browser.</p>
+            <p><strong>Third-Party Sharing</strong><br>We share data only with delivery partners and payment processors as necessary.</p>
+            <p><strong>Your Rights</strong><br>You may request access, correction, or deletion of your data by emailing Colonialbusinessltd@gmail.com.</p>
+            <p><strong>Updates</strong><br>This policy may be updated. Changes will be posted on this page.</p>
+        </div>
+        <button onclick="closePrivacyModal()" class="mt-6 w-full bg-black text-white py-2 rounded-lg">Close</button>
+    </div>
+</div>
+
+<!-- Size Guide Modal -->
+<div id="size-modal" class="fixed inset-0 bg-black/70 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl max-w-2xl w-full mx-auto p-6 max-h-[80vh] overflow-auto text-gray-800">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-2xl font-serif">Size Guide</h3>
+            <button onclick="closeSizeModal()" class="hover:opacity-70"><i data-lucide="x" class="w-5 h-5"></i></button>
+        </div>
+        <div class="space-y-4 text-sm">
+            <p><strong>International Size Chart</strong></p>
+            <table class="w-full border-collapse border border-gray-300">
+                <thead><tr class="bg-gray-100"><th class="border p-2">Size</th><th class="border p-2">Chest (in)</th><th class="border p-2">Waist (in)</th><th class="border p-2">Hip (in)</th></tr></thead>
+                <tbody>
+                    <tr><td class="border p-2">XS</td><td class="border p-2">32-34</td><td class="border p-2">26-28</td><td class="border p-2">34-36</td></tr>
+                    <tr><td class="border p-2">S</td><td class="border p-2">35-37</td><td class="border p-2">29-31</td><td class="border p-2">37-39</td></tr>
+                    <tr><td class="border p-2">M</td><td class="border p-2">38-40</td><td class="border p-2">32-34</td><td class="border p-2">40-42</td></tr>
+                    <tr><td class="border p-2">L</td><td class="border p-2">41-43</td><td class="border p-2">35-37</td><td class="border p-2">43-45</td></tr>
+                    <tr><td class="border p-2">XL</td><td class="border p-2">44-46</td><td class="border p-2">38-40</td><td class="border p-2">46-48</td></tr>
+                </tbody>
+            </table>
+            <p class="mt-2">Measure your body and match with the chart above. If between sizes, order the larger size for comfort.</p>
+        </div>
+        <button onclick="closeSizeModal()" class="mt-6 w-full bg-black text-white py-2 rounded-lg">Close</button>
+    </div>
+</div>
+
+<!-- Fabric Care Modal -->
+<div id="fabric-modal" class="fixed inset-0 bg-black/70 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl max-w-2xl w-full mx-auto p-6 max-h-[80vh] overflow-auto text-gray-800">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-2xl font-serif">Fabric Care Instructions</h3>
+            <button onclick="closeFabricModal()" class="hover:opacity-70"><i data-lucide="x" class="w-5 h-5"></i></button>
+        </div>
+        <div class="space-y-4 text-sm">
+            <p><strong>General Care</strong><br>Machine wash cold with similar colors. Do not bleach. Tumble dry low. Iron on low heat if needed.</p>
+            <p><strong>Cotton:</strong> Wash inside out, avoid harsh detergents, air dry for longevity.</p>
+            <p><strong>Linen:</strong> Gentle cycle, remove promptly, iron while damp.</p>
+            <p><strong>Wool/Blends:</strong> Dry clean recommended or hand wash cold, lay flat to dry.</p>
+        </div>
+        <button onclick="closeFabricModal()" class="mt-6 w-full bg-black text-white py-2 rounded-lg">Close</button>
+    </div>
+</div>
+
+<!-- Delivery & Return Modal (120-day return) -->
+<div id="delivery-modal" class="fixed inset-0 bg-black/70 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl max-w-2xl w-full mx-auto p-6 max-h-[80vh] overflow-auto text-gray-800">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-2xl font-serif">Delivery & Return</h3>
+            <button onclick="closeDeliveryModal()" class="hover:opacity-70"><i data-lucide="x" class="w-5 h-5"></i></button>
+        </div>
+        <div class="space-y-4 text-sm">
+            <p><strong>Shipping Policy</strong><br>We ship within Bangladesh. Standard delivery takes 3-5 business days. Express delivery available at extra cost.</p>
+            <p><strong>Return Policy</strong><br>You have <strong>120 days</strong> from the date of delivery to return any unused, unwashed item with original tags. For defective or wrong items, we cover return shipping. Refunds are processed within 7 days after inspection.</p>
+            <p><strong>Exchange</strong><br>Free size exchange within 120 days. Contact support to arrange pickup.</p>
+        </div>
+        <button onclick="closeDeliveryModal()" class="mt-6 w-full bg-black text-white py-2 rounded-lg">Close</button>
+    </div>
+</div>
+
+<!-- Billing Modal -->
+<div id="billing-modal" class="fixed inset-0 bg-black/70 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl max-w-2xl w-full mx-auto p-6 max-h-[80vh] overflow-auto text-gray-800">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-2xl font-serif">Billing Information</h3>
+            <button onclick="closeBillingModal()" class="hover:opacity-70"><i data-lucide="x" class="w-5 h-5"></i></button>
+        </div>
+        <div class="space-y-4 text-sm">
+            <p><strong>Payment Options</strong><br>We accept Cash on Delivery, bKash, Nagad, and credit/debit cards (via secure gateway).</p>
+            <p><strong>Invoicing</strong><br>An invoice is sent to your email after order confirmation. For bulk orders or corporate billing, contact us directly.</p>
+            <p><strong>Tax & Fees</strong><br>All prices include VAT. No hidden fees.</p>
+        </div>
+        <button onclick="closeBillingModal()" class="mt-6 w-full bg-black text-white py-2 rounded-lg">Close</button>
+    </div>
+</div>
+
+<!-- Contact Modal -->
+<div id="contact-modal" class="fixed inset-0 bg-black/70 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl max-w-2xl w-full mx-auto p-6 max-h-[80vh] overflow-auto text-gray-800">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-2xl font-serif">Contact Us</h3>
+            <button onclick="closeContactModal()" class="hover:opacity-70"><i data-lucide="x" class="w-5 h-5"></i></button>
+        </div>
+        <div class="space-y-4 text-sm">
+            <p><strong>Email:</strong> <a href="mailto:Colonialbusinessltd@gmail.com" class="text-blue-600">Colonialbusinessltd@gmail.com</a></p>
+            <p><strong>Phone:</strong> +880 18713-330654 (bKash/Nagad support)</p>
+            <p><strong>Support:</strong> +880 1643-425517</p>
+            <p><strong>Address:</strong> Chittagong, Bangladesh</p>
+            <p><strong>Business Hours:</strong> Saturday–Thursday, 10am – 8pm (Friday closed)</p>
+        </div>
+        <button onclick="closeContactModal()" class="mt-6 w-full bg-black text-white py-2 rounded-lg">Close</button>
+    </div>
+</div>
+
+<!-- About Us Modal -->
+<div id="about-modal" class="fixed inset-0 bg-black/70 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl max-w-2xl w-full mx-auto p-6 max-h-[80vh] overflow-auto text-gray-800">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-2xl font-serif">About COLONIAL</h3>
+            <button onclick="closeAboutModal()" class="hover:opacity-70"><i data-lucide="x" class="w-5 h-5"></i></button>
+        </div>
+        <div class="space-y-4 text-sm">
+            <p>Founded in 2026, COLONIAL is a contemporary fashion brand that blends timeless elegance with modern minimalist design. We believe in quality craftsmanship, sustainable practices, and creating pieces that transcend seasons.</p>
+            <p>Our collections are inspired by the raw beauty of nature and the precision of architecture. Every garment is designed with care, using premium materials sourced responsibly.</p>
+            <p>We are proud to serve customers across Bangladesh and look forward to bringing our vision worldwide.</p>
+        </div>
+        <button onclick="closeAboutModal()" class="mt-6 w-full bg-black text-white py-2 rounded-lg">Close</button>
+    </div>
+</div>
+
+<!-- Lifestyle Card Modal -->
+<div id="lifestyle-modal" class="fixed inset-0 bg-black/70 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl max-w-2xl w-full mx-auto p-6 max-h-[80vh] overflow-auto text-gray-800">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-2xl font-serif">Lifestyle Card</h3>
+            <button onclick="closeLifestyleModal()" class="hover:opacity-70"><i data-lucide="x" class="w-5 h-5"></i></button>
+        </div>
+        <div class="space-y-4 text-sm">
+            <p><strong>Join the COLONIAL Lifestyle Card – Free!</strong></p>
+            <p>Earn points on every purchase, get early access to sales, birthday discounts, and exclusive members‑only collections.</p>
+            <p><strong>Benefits:</strong></p>
+            <ul class="list-disc pl-6">
+                <li>5% back in points on every order</li>
+                <li>Free express shipping on orders over BDT 5000</li>
+                <li>15% birthday discount</li>
+                <li>Exclusive early access to new arrivals</li>
+            </ul>
+            <p>Sign up on your next checkout or contact us to activate your card.</p>
+        </div>
+        <button onclick="closeLifestyleModal()" class="mt-6 w-full bg-black text-white py-2 rounded-lg">Close</button>
+    </div>
+</div>
+
+<!-- Offers Modal -->
+<div id="offers-modal" class="fixed inset-0 bg-black/70 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl max-w-2xl w-full mx-auto p-6 max-h-[80vh] overflow-auto text-gray-800">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-2xl font-serif">Current Offers</h3>
+            <button onclick="closeOffersModal()" class="hover:opacity-70"><i data-lucide="x" class="w-5 h-5"></i></button>
+        </div>
+        <div class="space-y-4 text-sm">
+            <p><strong>🎉 Summer Launch Sale</strong><br>Up to 30% off on new arrivals. Use code: <span class="font-mono bg-gray-100 px-2 py-1">SUMMER30</span></p>
+            <p><strong>💳 First Order?</strong><br>Get 10% off your first purchase – automatically applied at checkout.</p>
+            <p><strong>🚚 Free Shipping</strong><br>On all orders over BDT 4000. No code needed.</p>
+            <p><strong>👭 Refer a Friend</strong><br>Give 15% off, get 15% off when they order.</p>
+        </div>
+        <button onclick="closeOffersModal()" class="mt-6 w-full bg-black text-white py-2 rounded-lg">Close</button>
+    </div>
+</div>
+
 <script>
+    // Modal open/close functions for footer links
     function openTermsModal() { document.getElementById('terms-modal').style.display = 'flex'; }
     function closeTermsModal() { document.getElementById('terms-modal').style.display = 'none'; }
     function openPrivacyModal() { document.getElementById('privacy-modal').style.display = 'flex'; }
     function closePrivacyModal() { document.getElementById('privacy-modal').style.display = 'none'; }
+    function openSizeModal() { document.getElementById('size-modal').style.display = 'flex'; }
+    function closeSizeModal() { document.getElementById('size-modal').style.display = 'none'; }
+    function openFabricModal() { document.getElementById('fabric-modal').style.display = 'flex'; }
+    function closeFabricModal() { document.getElementById('fabric-modal').style.display = 'none'; }
+    function openDeliveryModal() { document.getElementById('delivery-modal').style.display = 'flex'; }
+    function closeDeliveryModal() { document.getElementById('delivery-modal').style.display = 'none'; }
+    function openBillingModal() { document.getElementById('billing-modal').style.display = 'flex'; }
+    function closeBillingModal() { document.getElementById('billing-modal').style.display = 'none'; }
+    function openContactModal() { document.getElementById('contact-modal').style.display = 'flex'; }
+    function closeContactModal() { document.getElementById('contact-modal').style.display = 'none'; }
+    function openAboutModal() { document.getElementById('about-modal').style.display = 'flex'; }
+    function closeAboutModal() { document.getElementById('about-modal').style.display = 'none'; }
+    function openLifestyleModal() { document.getElementById('lifestyle-modal').style.display = 'flex'; }
+    function closeLifestyleModal() { document.getElementById('lifestyle-modal').style.display = 'none'; }
+    function openOffersModal() { document.getElementById('offers-modal').style.display = 'flex'; }
+    function closeOffersModal() { document.getElementById('offers-modal').style.display = 'none'; }
 
+    // Attach event listeners
     document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('size-guide-link')?.addEventListener('click', (e) => { e.preventDefault(); openSizeModal(); });
+        document.getElementById('fabric-care-link')?.addEventListener('click', (e) => { e.preventDefault(); openFabricModal(); });
+        document.getElementById('delivery-return-link')?.addEventListener('click', (e) => { e.preventDefault(); openDeliveryModal(); });
+        document.getElementById('billing-link')?.addEventListener('click', (e) => { e.preventDefault(); openBillingModal(); });
         document.getElementById('footer-terms-link')?.addEventListener('click', (e) => { e.preventDefault(); openTermsModal(); });
+        document.getElementById('contact-link')?.addEventListener('click', (e) => { e.preventDefault(); openContactModal(); });
+        document.getElementById('about-link')?.addEventListener('click', (e) => { e.preventDefault(); openAboutModal(); });
+        document.getElementById('lifestyle-link')?.addEventListener('click', (e) => { e.preventDefault(); openLifestyleModal(); });
+        document.getElementById('offers-link')?.addEventListener('click', (e) => { e.preventDefault(); openOffersModal(); });
         document.getElementById('footer-privacy-link')?.addEventListener('click', (e) => { e.preventDefault(); openPrivacyModal(); });
         document.getElementById('footer-wishlist-link')?.addEventListener('click', (e) => { e.preventDefault(); openWishlistModal(); });
     });
 
     lucide.createIcons();
 
+    // ------------------- (THE REST OF YOUR EXISTING JAVASCRIPT REMAINS IDENTICAL) -------------------
     let currentPage = 1, totalPages = 1;
     let currentFilters = { q: '', category: 'all', sort: 'newest' };
     let cart = JSON.parse(localStorage.getItem('amoura_cart')) || [];
