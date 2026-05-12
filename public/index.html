@@ -129,13 +129,32 @@
 <div id="cart-overlay" class="fixed inset-0 bg-black/50 z-40 opacity-0 invisible transition-all duration-300" onclick="toggleCart()"></div>
 
 <!-- Checkout Modal (with manual payment) -->
+<!-- Checkout Modal (with mandatory delivery fee & transaction ID for all orders) -->
 <div id="checkout-modal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
     <div class="bg-white rounded-xl max-w-md w-full mx-auto p-6 max-h-[90vh] overflow-auto">
-        <div class="flex justify-between items-center mb-4"><h3 class="text-2xl font-serif">Checkout</h3><button onclick="closeCheckout()" class="hover:opacity-70"><i data-lucide="x" class="w-5 h-5"></i></button></div>
-        <input type="text" id="customer-name" placeholder="Full name" class="w-full border rounded-lg p-2 mb-3" required>
-        <input type="email" id="customer-email" placeholder="Email address" class="w-full border rounded-lg p-2 mb-3" required>
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-2xl font-serif">Checkout</h3>
+            <button onclick="closeCheckout()" class="hover:opacity-70"><i data-lucide="x" class="w-5 h-5"></i></button>
+        </div>
+        
+        <input type="text" id="customer-name" placeholder="Full name *" class="w-full border rounded-lg p-2 mb-3" required>
+        <input type="email" id="customer-email" placeholder="Email address *" class="w-full border rounded-lg p-2 mb-3" required>
         <input type="text" id="customer-phone" placeholder="Phone (optional)" class="w-full border rounded-lg p-2 mb-3">
         <textarea id="shipping-address" placeholder="Shipping address" class="w-full border rounded-lg p-2 mb-3"></textarea>
+
+        <!-- Delivery Options - MANDATORY -->
+        <div class="mb-3">
+            <label class="block text-sm font-medium mb-1">Delivery Option <span class="text-red-600">*</span></label>
+            <div class="flex flex-wrap gap-4">
+                <label class="flex items-center gap-2">
+                    <input type="radio" name="delivery_option" value="inside" data-fee="80" checked> Inside Chittagong – BDT 80
+                </label>
+                <label class="flex items-center gap-2">
+                    <input type="radio" name="delivery_option" value="outside" data-fee="150"> Outside Chittagong – BDT 150
+                </label>
+            </div>
+            <p class="text-xs text-gray-500 mt-1">Delivery fee is mandatory for all orders.</p>
+        </div>
 
         <div class="mb-3">
             <label class="block text-sm font-medium mb-1">Payment Method</label>
@@ -144,16 +163,21 @@
                     <input type="radio" name="payment_method" value="cash_on_delivery" checked> Cash on Delivery
                 </label>
                 <label class="flex items-center gap-2">
-                    <input type="radio" name="payment_method" value="bkash"> bKash / Nagad
+                    <input type="radio" name="payment_method" value="bkash"> Advance Payment (Bkash/Nagad)
                 </label>
             </div>
         </div>
 
-        <div id="manual-payment-details" class="hidden mb-3 p-3 bg-gray-50 rounded-lg">
-            <p class="text-sm font-medium">Send payment to:</p>
+        <!-- Transaction ID section - ALWAYS VISIBLE -->
+        <div id="manual-payment-details" class="mb-3 p-3 bg-gray-50 rounded-lg">
+            <p id="payment-instruction-heading" class="text-sm font-medium">Advance Payment (Delivery Charge Only+product price):</p>
             <p class="text-lg font-mono font-bold">+8801871330654 (bKash/Nagad)</p>
-            <p class="text-xs text-gray-500 mt-1">After sending money, enter the transaction ID below.</p>
-            <input type="text" id="transaction-id" placeholder="Transaction ID (e.g., 8E7A2K9L)" class="w-full border rounded-lg p-2 mt-2">
+            <p id="payment-instruction-sub" class="text-xs text-gray-500 mt-1">Pay the delivery charge only and enter the transaction ID below.</p>
+            <div class="mt-2 p-2 bg-yellow-50 rounded text-sm">
+                Amount to pay: <strong id="payable-amount">BDT 0</strong>
+            </div>
+            <input type="text" id="transaction-id" placeholder="Transaction ID (e.g., 8E7A2K9L)" class="w-full border rounded-lg p-2 mt-2" required>
+            <p class="text-xs text-red-500 hidden mt-1" id="txn-error">Transaction ID is required to place your order.</p>
         </div>
 
         <div class="mb-3">
@@ -166,7 +190,6 @@
         <button onclick="closeCheckout()" class="w-full mt-2 border border-gray-300 py-2 rounded-lg text-sm hover:bg-gray-100">Cancel</button>
     </div>
 </div>
-
 <!-- Product Quick View Modal -->
 <div id="product-modal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
     <div class="bg-white rounded-xl max-w-2xl w-full mx-auto p-4 md:p-6 max-h-[90vh] overflow-auto">
@@ -485,518 +508,558 @@
         <button onclick="closeOffersModal()" class="mt-6 w-full bg-black text-white py-2 rounded-lg">Close</button>
     </div>
 </div>
-
 <script>
-    // Modal open/close functions for footer links
-    function openTermsModal() { document.getElementById('terms-modal').style.display = 'flex'; }
-    function closeTermsModal() { document.getElementById('terms-modal').style.display = 'none'; }
-    function openPrivacyModal() { document.getElementById('privacy-modal').style.display = 'flex'; }
-    function closePrivacyModal() { document.getElementById('privacy-modal').style.display = 'none'; }
-    function openSizeModal() { document.getElementById('size-modal').style.display = 'flex'; }
-    function closeSizeModal() { document.getElementById('size-modal').style.display = 'none'; }
-    function openFabricModal() { document.getElementById('fabric-modal').style.display = 'flex'; }
-    function closeFabricModal() { document.getElementById('fabric-modal').style.display = 'none'; }
-    function openDeliveryModal() { document.getElementById('delivery-modal').style.display = 'flex'; }
-    function closeDeliveryModal() { document.getElementById('delivery-modal').style.display = 'none'; }
-    function openBillingModal() { document.getElementById('billing-modal').style.display = 'flex'; }
-    function closeBillingModal() { document.getElementById('billing-modal').style.display = 'none'; }
-    function openContactModal() { document.getElementById('contact-modal').style.display = 'flex'; }
-    function closeContactModal() { document.getElementById('contact-modal').style.display = 'none'; }
-    function openAboutModal() { document.getElementById('about-modal').style.display = 'flex'; }
-    function closeAboutModal() { document.getElementById('about-modal').style.display = 'none'; }
-    function openLifestyleModal() { document.getElementById('lifestyle-modal').style.display = 'flex'; }
-    function closeLifestyleModal() { document.getElementById('lifestyle-modal').style.display = 'none'; }
-    function openOffersModal() { document.getElementById('offers-modal').style.display = 'flex'; }
-    function closeOffersModal() { document.getElementById('offers-modal').style.display = 'none'; }
+// Modal open/close functions for footer links
+function openTermsModal() { document.getElementById('terms-modal').style.display = 'flex'; }
+function closeTermsModal() { document.getElementById('terms-modal').style.display = 'none'; }
+function openPrivacyModal() { document.getElementById('privacy-modal').style.display = 'flex'; }
+function closePrivacyModal() { document.getElementById('privacy-modal').style.display = 'none'; }
+function openSizeModal() { document.getElementById('size-modal').style.display = 'flex'; }
+function closeSizeModal() { document.getElementById('size-modal').style.display = 'none'; }
+function openFabricModal() { document.getElementById('fabric-modal').style.display = 'flex'; }
+function closeFabricModal() { document.getElementById('fabric-modal').style.display = 'none'; }
+function openDeliveryModal() { document.getElementById('delivery-modal').style.display = 'flex'; }
+function closeDeliveryModal() { document.getElementById('delivery-modal').style.display = 'none'; }
+function openBillingModal() { document.getElementById('billing-modal').style.display = 'flex'; }
+function closeBillingModal() { document.getElementById('billing-modal').style.display = 'none'; }
+function openContactModal() { document.getElementById('contact-modal').style.display = 'flex'; }
+function closeContactModal() { document.getElementById('contact-modal').style.display = 'none'; }
+function openAboutModal() { document.getElementById('about-modal').style.display = 'flex'; }
+function closeAboutModal() { document.getElementById('about-modal').style.display = 'none'; }
+function openLifestyleModal() { document.getElementById('lifestyle-modal').style.display = 'flex'; }
+function closeLifestyleModal() { document.getElementById('lifestyle-modal').style.display = 'none'; }
+function openOffersModal() { document.getElementById('offers-modal').style.display = 'flex'; }
+function closeOffersModal() { document.getElementById('offers-modal').style.display = 'none'; }
 
-    // Attach event listeners
-    document.addEventListener('DOMContentLoaded', function() {
-        document.getElementById('size-guide-link')?.addEventListener('click', (e) => { e.preventDefault(); openSizeModal(); });
-        document.getElementById('fabric-care-link')?.addEventListener('click', (e) => { e.preventDefault(); openFabricModal(); });
-        document.getElementById('delivery-return-link')?.addEventListener('click', (e) => { e.preventDefault(); openDeliveryModal(); });
-        document.getElementById('billing-link')?.addEventListener('click', (e) => { e.preventDefault(); openBillingModal(); });
-        document.getElementById('footer-terms-link')?.addEventListener('click', (e) => { e.preventDefault(); openTermsModal(); });
-        document.getElementById('contact-link')?.addEventListener('click', (e) => { e.preventDefault(); openContactModal(); });
-        document.getElementById('about-link')?.addEventListener('click', (e) => { e.preventDefault(); openAboutModal(); });
-        document.getElementById('lifestyle-link')?.addEventListener('click', (e) => { e.preventDefault(); openLifestyleModal(); });
-        document.getElementById('offers-link')?.addEventListener('click', (e) => { e.preventDefault(); openOffersModal(); });
-        document.getElementById('footer-privacy-link')?.addEventListener('click', (e) => { e.preventDefault(); openPrivacyModal(); });
-        document.getElementById('footer-wishlist-link')?.addEventListener('click', (e) => { e.preventDefault(); openWishlistModal(); });
-    });
+// Attach event listeners
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('size-guide-link')?.addEventListener('click', (e) => { e.preventDefault(); openSizeModal(); });
+    document.getElementById('fabric-care-link')?.addEventListener('click', (e) => { e.preventDefault(); openFabricModal(); });
+    document.getElementById('delivery-return-link')?.addEventListener('click', (e) => { e.preventDefault(); openDeliveryModal(); });
+    document.getElementById('billing-link')?.addEventListener('click', (e) => { e.preventDefault(); openBillingModal(); });
+    document.getElementById('footer-terms-link')?.addEventListener('click', (e) => { e.preventDefault(); openTermsModal(); });
+    document.getElementById('contact-link')?.addEventListener('click', (e) => { e.preventDefault(); openContactModal(); });
+    document.getElementById('about-link')?.addEventListener('click', (e) => { e.preventDefault(); openAboutModal(); });
+    document.getElementById('lifestyle-link')?.addEventListener('click', (e) => { e.preventDefault(); openLifestyleModal(); });
+    document.getElementById('offers-link')?.addEventListener('click', (e) => { e.preventDefault(); openOffersModal(); });
+    document.getElementById('footer-privacy-link')?.addEventListener('click', (e) => { e.preventDefault(); openPrivacyModal(); });
+    document.getElementById('footer-wishlist-link')?.addEventListener('click', (e) => { e.preventDefault(); openWishlistModal(); });
+});
 
-    lucide.createIcons();
+lucide.createIcons();
 
-    // ------------------- (THE REST OF YOUR EXISTING JAVASCRIPT REMAINS IDENTICAL) -------------------
-    let currentPage = 1, totalPages = 1;
-    let currentFilters = { q: '', category: 'all', sort: 'newest' };
-    let cart = JSON.parse(localStorage.getItem('amoura_cart')) || [];
-    let currentProduct = null;
-    let selectedSize = 'M';
-    let selectedColor = { hex: '', name: '' };
-    let authToken = localStorage.getItem('amoura_token');
-    let currentUser = null;
-    let appliedCoupon = null;
-    let couponDiscount = 0;
-    let customerEventSource = null;
-    let carouselProducts = [], currentSlide = 0, slideInterval;
-    let wishlist = [];
-    let currentRating = 0;
+// ------------------- MAIN APPLICATION STATE -------------------
+let currentPage = 1, totalPages = 1;
+let currentFilters = { q: '', category: 'all', sort: 'newest' };
+let cart = JSON.parse(localStorage.getItem('amoura_cart')) || [];
+let currentProduct = null;
+let selectedSize = 'M';
+let selectedColor = { hex: '', name: '' };
+let authToken = localStorage.getItem('amoura_token');
+let currentUser = null;
+let appliedCoupon = null;
+let couponDiscount = 0;
+let customerEventSource = null;
+let carouselProducts = [], currentSlide = 0, slideInterval;
+let wishlist = [];
+let currentRating = 0;
 
-    function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : m === '>' ? '&gt;' : m); }
-    function showToast(message) {
-        let toast = document.getElementById('toast');
-        if (!toast) { toast = document.createElement('div'); toast.id = 'toast'; toast.className = 'fixed bottom-4 right-4 bg-black text-white px-4 py-2 rounded-lg shadow-lg z-50 transition-opacity duration-300 opacity-0 text-sm'; document.body.appendChild(toast); }
-        toast.innerText = message; toast.style.opacity = '1'; setTimeout(() => toast.style.opacity = '0', 3000);
-    }
+function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : m === '>' ? '&gt;' : m); }
+function showToast(message) {
+    let toast = document.getElementById('toast');
+    if (!toast) { toast = document.createElement('div'); toast.id = 'toast'; toast.className = 'fixed bottom-4 right-4 bg-black text-white px-4 py-2 rounded-lg shadow-lg z-50 transition-opacity duration-300 opacity-0 text-sm'; document.body.appendChild(toast); }
+    toast.innerText = message; toast.style.opacity = '1'; setTimeout(() => toast.style.opacity = '0', 3000);
+}
 
-    function getPaymentStatusBadge(status) {
-        const map = { 'paid': 'payment-paid', 'pending': 'payment-pending', 'awaiting_verification': 'payment-awaiting', 'failed': 'payment-failed' };
-        return `<span class="payment-badge ${map[status] || 'payment-pending'}">${escapeHtml(status ? status.replace('_', ' ') : 'pending')}</span>`;
-    }
+function getPaymentStatusBadge(status) {
+    const map = { 'paid': 'payment-paid', 'pending': 'payment-pending', 'awaiting_verification': 'payment-awaiting', 'failed': 'payment-failed' };
+    return `<span class="payment-badge ${map[status] || 'payment-pending'}">${escapeHtml(status ? status.replace('_', ' ') : 'pending')}</span>`;
+}
 
-    async function loadWishlistCount() {
-        if (!authToken) return;
-        try {
-            const res = await fetch('/api/wishlist', { headers: { 'Authorization': `Bearer ${authToken}` } });
-            wishlist = (await res.json()).map(p => p.id);
+async function loadWishlistCount() {
+    if (!authToken) return;
+    try {
+        const res = await fetch('/api/wishlist', { headers: { 'Authorization': `Bearer ${authToken}` } });
+        wishlist = (await res.json()).map(p => p.id);
+        document.getElementById('wishlist-count').innerText = wishlist.length;
+        document.getElementById('wishlist-count').style.opacity = wishlist.length ? '1' : '0';
+    } catch(err) { console.error(err); }
+}
+
+async function toggleWishlist(productId) {
+    if (!authToken) { openAuthModal(); return; }
+    const inWishlist = wishlist.includes(productId);
+    const url = inWishlist ? `/api/wishlist/${productId}` : '/api/wishlist';
+    const method = inWishlist ? 'DELETE' : 'POST';
+    try {
+        const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` }, body: JSON.stringify({ product_id: productId }) });
+        if (res.ok) {
+            if (inWishlist) wishlist = wishlist.filter(id => id !== productId);
+            else wishlist.push(productId);
             document.getElementById('wishlist-count').innerText = wishlist.length;
             document.getElementById('wishlist-count').style.opacity = wishlist.length ? '1' : '0';
-        } catch(err) { console.error(err); }
-    }
+            showToast(inWishlist ? 'Removed from wishlist' : 'Added to wishlist');
+            renderWishlistModal();
+            const heartIcon = document.getElementById('modal-wishlist-btn')?.querySelector('i');
+            if (heartIcon) inWishlist ? heartIcon.classList.remove('fill-red-500') : heartIcon.classList.add('fill-red-500');
+        }
+    } catch(err) { console.error(err); }
+}
 
-    async function toggleWishlist(productId) {
-        if (!authToken) { openAuthModal(); return; }
-        const inWishlist = wishlist.includes(productId);
-        const url = inWishlist ? `/api/wishlist/${productId}` : '/api/wishlist';
-        const method = inWishlist ? 'DELETE' : 'POST';
-        try {
-            const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` }, body: JSON.stringify({ product_id: productId }) });
-            if (res.ok) {
-                if (inWishlist) wishlist = wishlist.filter(id => id !== productId);
-                else wishlist.push(productId);
-                document.getElementById('wishlist-count').innerText = wishlist.length;
-                document.getElementById('wishlist-count').style.opacity = wishlist.length ? '1' : '0';
-                showToast(inWishlist ? 'Removed from wishlist' : 'Added to wishlist');
-                renderWishlistModal();
-                const heartIcon = document.getElementById('modal-wishlist-btn')?.querySelector('i');
-                if (heartIcon) inWishlist ? heartIcon.classList.remove('fill-red-500') : heartIcon.classList.add('fill-red-500');
-            }
-        } catch(err) { console.error(err); }
-    }
+async function renderWishlistModal() {
+    if (!authToken) return;
+    const products = await (await fetch('/api/wishlist', { headers: { 'Authorization': `Bearer ${authToken}` } })).json();
+    const container = document.getElementById('wishlist-items');
+    if (!products.length) { container.innerHTML = '<div class="col-span-full text-center text-gray-500">Your wishlist is empty.</div>'; return; }
+    container.innerHTML = products.map(p => `
+        <div class="border rounded p-2 text-center">
+            <img src="${p.image_url || 'https://placehold.co/150x180'}" class="h-32 w-full object-cover">
+            <p class="font-medium mt-1">${escapeHtml(p.name)}</p>
+            <p>BDT ${p.final_price || p.price}</p>
+            <button onclick="addToCart({id:${p.id}, name:'${p.name.replace(/'/g, "\\'")}', price:${p.final_price || p.price}, image_url:'${p.image_url}'}, 1); closeWishlistModal();" class="bg-black text-white text-xs px-2 py-1 rounded mt-1">Add to Cart</button>
+            <button onclick="toggleWishlist(${p.id})" class="text-xs underline ml-1">Remove</button>
+        </div>
+    `).join('');
+}
 
-    async function renderWishlistModal() {
-        if (!authToken) return;
-        const products = await (await fetch('/api/wishlist', { headers: { 'Authorization': `Bearer ${authToken}` } })).json();
-        const container = document.getElementById('wishlist-items');
-        if (!products.length) { container.innerHTML = '<div class="col-span-full text-center text-gray-500">Your wishlist is empty.</div>'; return; }
-        container.innerHTML = products.map(p => `
-            <div class="border rounded p-2 text-center">
-                <img src="${p.image_url || 'https://placehold.co/150x180'}" class="h-32 w-full object-cover">
-                <p class="font-medium mt-1">${escapeHtml(p.name)}</p>
-                <p>BDT ${p.final_price || p.price}</p>
-                <button onclick="addToCart({id:${p.id}, name:'${p.name.replace(/'/g, "\\'")}', price:${p.final_price || p.price}, image_url:'${p.image_url}'}, 1); closeWishlistModal();" class="bg-black text-white text-xs px-2 py-1 rounded mt-1">Add to Cart</button>
-                <button onclick="toggleWishlist(${p.id})" class="text-xs underline ml-1">Remove</button>
+function openWishlistModal() { if (!authToken) { openAuthModal(); return; } renderWishlistModal(); document.getElementById('wishlist-modal').style.display = 'flex'; }
+function closeWishlistModal() { document.getElementById('wishlist-modal').style.display = 'none'; }
+
+async function loadReviews(productId) {
+    const reviews = await (await fetch(`/api/products/${productId}/reviews`)).json();
+    const container = document.getElementById('reviews-container');
+    if (!reviews.length) container.innerHTML = '<div class="text-gray-500 text-sm">No reviews yet. Be the first!</div>';
+    else container.innerHTML = reviews.map(r => `<div class="border-b pb-2"><div class="flex items-center gap-1"><div class="star-rating">${'★'.repeat(r.rating)}${'☆'.repeat(5-r.rating)}</div><span class="text-xs text-gray-500">${escapeHtml(r.reviewer_name)}</span></div><p class="text-sm">${escapeHtml(r.comment)}</p></div>`).join('');
+    const avg = reviews.reduce((s,r)=>s+r.rating,0)/reviews.length || 0;
+    document.getElementById('modal-rating').innerHTML = '<span class="star-rating">' + '★'.repeat(Math.round(avg)) + '☆'.repeat(5-Math.round(avg)) + '</span>';
+    document.getElementById('modal-review-count').innerText = `(${reviews.length} reviews)`;
+}
+
+async function submitReview(productId, rating, comment) {
+    if (!authToken) { alert('Please login to review.'); openAuthModal(); return; }
+    const res = await fetch(`/api/products/${productId}/reviews`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` }, body: JSON.stringify({ rating, comment }) });
+    if (res.ok) { showToast('Review submitted!'); loadReviews(productId); }
+    else alert((await res.json()).error);
+}
+
+function initCustomerSSE() {
+    if (customerEventSource) customerEventSource.close();
+    if (!authToken) return;
+    customerEventSource = new EventSource(`/api/customer/order-events?token=${authToken}`);
+    customerEventSource.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        if (data.type === 'order_status_update') showToast(`Order #${data.orderId} status changed to ${data.newStatus}`);
+        else if (data.type === 'payment_status_update') showToast(`Payment for order #${data.orderId} is now ${data.paymentStatus}`);
+        if (document.getElementById('orders-modal').style.display === 'flex') loadCustomerOrders();
+    };
+    customerEventSource.onerror = () => setTimeout(initCustomerSSE, 5000);
+}
+
+async function loadCurrentUser() {
+    if (!authToken) return;
+    try {
+        const res = await fetch('/api/auth/me', { headers: { 'Authorization': `Bearer ${authToken}` } });
+        if (res.ok) { currentUser = await res.json(); updateAuthUI(); initCustomerSSE(); loadWishlistCount(); }
+        else { localStorage.removeItem('amoura_token'); authToken = null; currentUser = null; updateAuthUI(); }
+    } catch(err){ console.error(err); }
+}
+
+function updateAuthUI() {
+    const ui = document.getElementById('user-info');
+    if (currentUser) ui.innerHTML = `<div class="font-medium">${escapeHtml(currentUser.name || currentUser.email)}</div><div class="text-xs text-gray-500">${currentUser.role}</div>`;
+    else ui.innerHTML = '<div class="text-gray-500">Not logged in</div>';
+    const emailField = document.getElementById('customer-email');
+    if (emailField && currentUser && !emailField.value) emailField.value = currentUser.email;
+}
+
+document.getElementById('account-btn')?.addEventListener('click', (e) => { e.stopPropagation(); document.getElementById('account-dropdown').classList.toggle('hidden'); });
+document.addEventListener('click', () => document.getElementById('account-dropdown')?.classList.add('hidden'));
+document.getElementById('my-orders-link')?.addEventListener('click', (e) => { e.preventDefault(); if (!currentUser) openAuthModal(); else loadCustomerOrders(); });
+document.getElementById('logout-link')?.addEventListener('click', (e) => { e.preventDefault(); if (customerEventSource) customerEventSource.close(); localStorage.removeItem('amoura_token'); authToken = null; currentUser = null; updateAuthUI(); location.reload(); });
+document.getElementById('wishlist-btn')?.addEventListener('click', () => openWishlistModal());
+document.getElementById('wishlist-dropdown-link')?.addEventListener('click', (e) => { e.preventDefault(); openWishlistModal(); });
+document.getElementById('mobile-wishlist-link')?.addEventListener('click', (e) => { e.preventDefault(); openWishlistModal(); });
+
+let isLoginMode = true;
+function openAuthModal() { isLoginMode = true; document.getElementById('auth-modal-title').innerText = 'Login'; document.getElementById('auth-submit').innerText = 'Login'; document.getElementById('auth-toggle-text').innerText = "Don't have an account?"; document.getElementById('auth-name-group').classList.add('hidden'); document.getElementById('auth-modal').style.display = 'flex'; }
+function closeAuthModal() { document.getElementById('auth-modal').style.display = 'none'; }
+document.getElementById('auth-toggle-btn')?.addEventListener('click', () => {
+    isLoginMode = !isLoginMode;
+    if (isLoginMode) { document.getElementById('auth-modal-title').innerText = 'Login'; document.getElementById('auth-submit').innerText = 'Login'; document.getElementById('auth-toggle-text').innerText = "Don't have an account?"; document.getElementById('auth-name-group').classList.add('hidden'); }
+    else { document.getElementById('auth-modal-title').innerText = 'Register'; document.getElementById('auth-submit').innerText = 'Register'; document.getElementById('auth-toggle-text').innerText = "Already have an account?"; document.getElementById('auth-name-group').classList.remove('hidden'); }
+});
+document.getElementById('auth-submit')?.addEventListener('click', async () => {
+    const email = document.getElementById('auth-email').value.trim(), password = document.getElementById('auth-password').value;
+    if (!email || !password) return alert('Email and password required');
+    const endpoint = isLoginMode ? '/api/auth/login' : '/api/auth/register';
+    const body = { email, password }; if (!isLoginMode) body.name = document.getElementById('auth-name').value.trim();
+    try {
+        const res = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Authentication failed');
+        authToken = data.token; localStorage.setItem('amoura_token', authToken); currentUser = data.user; updateAuthUI(); closeAuthModal(); initCustomerSSE(); loadWishlistCount();
+    } catch(err) { alert(err.message); }
+});
+
+async function loadCustomerOrders() {
+    if (!authToken) return;
+    try {
+        const orders = await (await fetch('/api/customer/orders', { headers: { 'Authorization': `Bearer ${authToken}` } })).json();
+        const container = document.getElementById('orders-list-container');
+        if (!orders.length) container.innerHTML = '<div class="text-center text-gray-500 py-8">You have no orders yet.</div>';
+        else {
+            container.innerHTML = orders.map(o => {
+                let itemsHtml = '';
+                try {
+                    const items = JSON.parse(o.items || '[]');
+                    itemsHtml = items.map(i => `
+                        <div class="flex gap-3 items-center border-b pb-2 mb-2">
+                            <img src="${i.image_url || 'https://placehold.co/40x50/e2e2e2/black?text=No+Img'}" class="w-10 h-12 object-cover rounded">
+                            <div class="flex-1">
+                                <div>${escapeHtml(i.name)} ${i.size ? `(${i.size})` : ''} ${i.color ? `- ${i.color}` : ''}</div>
+                                <div class="flex justify-between text-sm"><span>Qty: ${i.quantity}</span><span>BDT ${i.price}</span></div>
+                            </div>
+                        </div>
+                    `).join('');
+                } catch(e) { itemsHtml = 'Unable to load items'; }
+                return `<div class="border rounded-lg p-4"><div class="flex justify-between flex-wrap gap-2"><div><strong>Order #${escapeHtml(o.order_number || o.id)}</strong><br>${new Date(o.created_at).toLocaleDateString()}</div><div class="text-right"><span class="font-semibold">BDT ${parseFloat(o.final_amount || o.total_amount || 0).toFixed(2)}</span><br><span class="text-sm capitalize">${escapeHtml(o.order_status || 'pending')}</span><br><span class="text-xs">Payment: ${getPaymentStatusBadge(o.payment_status)}</span></div></div><div class="mt-2">${itemsHtml}</div></div>`;
+            }).join('');
+        }
+        document.getElementById('orders-modal').style.display = 'flex';
+    } catch(err) { alert('Could not load your orders.'); }
+}
+function closeOrdersModal() { document.getElementById('orders-modal').style.display = 'none'; }
+
+function saveCart() { localStorage.setItem('amoura_cart', JSON.stringify(cart)); updateCartUI(); }
+function updateCartUI() {
+    const subtotal = cart.reduce((s, i) => s + (i.price * i.quantity), 0);
+    const total = subtotal - couponDiscount;
+    document.getElementById('cart-total-price').innerText = `BDT ${Math.max(0, total).toFixed(2)}`;
+    const totalItems = cart.reduce((s, i) => s + i.quantity, 0);
+    document.getElementById('cart-count').innerText = totalItems;
+    document.getElementById('cart-count').style.opacity = totalItems ? '1' : '0';
+    const container = document.getElementById('cart-items-list');
+    if (!cart.length) container.innerHTML = '<p class="text-center text-gray-500 py-12">Your cart is empty</p>';
+    else {
+        container.innerHTML = cart.map((item, idx) => `
+            <div class="flex gap-3 border-b pb-3">
+                <img src="${item.image_url || 'https://placehold.co/70x90/e2e2e2/black?text=COLONIAL'}" class="w-16 h-20 object-cover bg-gray-100 rounded">
+                <div class="flex-1">
+                    <p class="font-medium text-sm">${escapeHtml(item.name)}</p>
+                    <p class="text-xs text-gray-500">Size: ${item.size || 'M'} | Colour: ${item.color || 'Default'}</p>
+                    <p class="text-sm text-gray-600 mt-1">BDT ${item.price}</p>
+                    <div class="flex items-center gap-2 mt-2">
+                        <button onclick="changeQty(${idx}, -1)" class="w-6 h-6 border rounded-full flex items-center justify-center text-xs">-</button>
+                        <span class="w-6 text-center text-sm">${item.quantity}</span>
+                        <button onclick="changeQty(${idx}, 1)" class="w-6 h-6 border rounded-full flex items-center justify-center text-xs">+</button>
+                        <button onclick="removeFromCart(${idx})" class="text-red-500 text-xs ml-2 underline">Remove</button>
+                    </div>
+                </div>
             </div>
         `).join('');
     }
+    if (typeof updatePaymentInstruction === 'function') updatePaymentInstruction();
+    lucide.createIcons();
+}
+function changeQty(idx, delta) { let q = cart[idx].quantity + delta; if (q <= 0) cart.splice(idx, 1); else cart[idx].quantity = q; saveCart(); }
+function removeFromCart(idx) { cart.splice(idx, 1); saveCart(); }
+function addToCart(product, qty = 1) {
+    const size = selectedSize || 'M';
+    const color = selectedColor.name || 'Default';
+    const existing = cart.find(i => i.id === product.id && i.size === size && i.color === color);
+    if (existing) existing.quantity += qty;
+    else cart.push({ ...product, quantity: qty, size, color, image_url: product.image_url || (product.images?.[0] || '') });
+    saveCart();
+    toggleCart();
+}
+function toggleCart() { document.getElementById('cart-drawer').classList.toggle('translate-x-full'); document.getElementById('cart-overlay').classList.toggle('opacity-0'); document.getElementById('cart-overlay').classList.toggle('invisible'); document.body.style.overflow = document.getElementById('cart-drawer').classList.contains('translate-x-full') ? '' : 'hidden'; }
+function toggleMenu() { document.getElementById('mobile-menu').classList.toggle('-translate-x-full'); }
 
-    function openWishlistModal() { if (!authToken) { openAuthModal(); return; } renderWishlistModal(); document.getElementById('wishlist-modal').style.display = 'flex'; }
-    function closeWishlistModal() { document.getElementById('wishlist-modal').style.display = 'none'; }
+function getSlideWidth() { const first = document.querySelector('#product-carousel .flex-shrink-0'); if (!first) return 352; const style = getComputedStyle(first); return first.offsetWidth + parseFloat(style.marginLeft) + parseFloat(style.marginRight); }
+function updateCarouselPosition() { const container = document.getElementById('product-carousel'); if (container) container.style.transform = `translateX(-${currentSlide * getSlideWidth()}px)`; }
+async function loadCarouselProducts() { try { const res = await fetch('/api/products?limit=6'); carouselProducts = (await res.json()).slice(0, 6); renderCarousel(); startAutoSlide(); window.addEventListener('resize', updateCarouselPosition); } catch(e) { console.error(e); } }
+function renderCarousel() {
+    const container = document.getElementById('product-carousel');
+    if (!container) return;
+    if (!carouselProducts.length) { container.innerHTML = '<div class="w-full text-center py-12 text-gray-500">No products</div>'; return; }
+    container.innerHTML = carouselProducts.map(p => `<div class="flex-shrink-0 w-64 md:w-80 mx-3 md:mx-4 bg-white rounded-xl shadow-lg overflow-hidden transition-transform hover:scale-105 duration-300"><img src="${p.image_url || 'https://placehold.co/400x500/e2e2e2/black?text=COLONIAL'}" class="w-full h-48 md:h-64 object-cover"><div class="p-3 md:p-4 text-center"><h3 class="font-serif text-lg md:text-xl mb-1">${escapeHtml(p.name)}</h3><p class="text-gray-600 text-sm">BDT ${p.final_price || p.price}</p><button onclick="addToCart({id:${p.id}, name:'${p.name.replace(/'/g, "\\'")}', price:${p.final_price || p.price}, image_url:'${p.image_url}'}, 1)" class="mt-3 bg-black text-white px-3 py-1 text-xs rounded-full hover:bg-gray-800 transition">Quick Shop</button></div></div>`).join('');
+    lucide.createIcons();
+    updateCarouselPosition();
+}
+function startAutoSlide() { if (slideInterval) clearInterval(slideInterval); slideInterval = setInterval(() => { if (carouselProducts.length) { currentSlide = (currentSlide + 1) % carouselProducts.length; updateCarouselPosition(); } }, 5000); }
+function nextSlide() { if (!carouselProducts.length) return; currentSlide = (currentSlide + 1) % carouselProducts.length; updateCarouselPosition(); resetAutoSlide(); }
+function prevSlide() { if (!carouselProducts.length) return; currentSlide = (currentSlide - 1 + carouselProducts.length) % carouselProducts.length; updateCarouselPosition(); resetAutoSlide(); }
+function resetAutoSlide() { if (slideInterval) clearInterval(slideInterval); slideInterval = setInterval(() => { currentSlide = (currentSlide + 1) % carouselProducts.length; updateCarouselPosition(); }, 5000); }
 
-    async function loadReviews(productId) {
-        const reviews = await (await fetch(`/api/products/${productId}/reviews`)).json();
-        const container = document.getElementById('reviews-container');
-        if (!reviews.length) container.innerHTML = '<div class="text-gray-500 text-sm">No reviews yet. Be the first!</div>';
-        else container.innerHTML = reviews.map(r => `<div class="border-b pb-2"><div class="flex items-center gap-1"><div class="star-rating">${'★'.repeat(r.rating)}${'☆'.repeat(5-r.rating)}</div><span class="text-xs text-gray-500">${escapeHtml(r.reviewer_name)}</span></div><p class="text-sm">${escapeHtml(r.comment)}</p></div>`).join('');
-        const avg = reviews.reduce((s,r)=>s+r.rating,0)/reviews.length || 0;
-        document.getElementById('modal-rating').innerHTML = '<span class="star-rating">' + '★'.repeat(Math.round(avg)) + '☆'.repeat(5-Math.round(avg)) + '</span>';
-        document.getElementById('modal-review-count').innerText = `(${reviews.length} reviews)`;
-    }
-
-    async function submitReview(productId, rating, comment) {
-        if (!authToken) { alert('Please login to review.'); openAuthModal(); return; }
-        const res = await fetch(`/api/products/${productId}/reviews`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` }, body: JSON.stringify({ rating, comment }) });
-        if (res.ok) { showToast('Review submitted!'); loadReviews(productId); }
-        else alert((await res.json()).error);
-    }
-
-    function initCustomerSSE() {
-        if (customerEventSource) customerEventSource.close();
-        if (!authToken) return;
-        customerEventSource = new EventSource(`/api/customer/order-events?token=${authToken}`);
-        customerEventSource.onmessage = (event) => {
-            const data = JSON.parse(event.data);
-            if (data.type === 'order_status_update') showToast(`Order #${data.orderId} status changed to ${data.newStatus}`);
-            else if (data.type === 'payment_status_update') showToast(`Payment for order #${data.orderId} is now ${data.paymentStatus}`);
-            if (document.getElementById('orders-modal').style.display === 'flex') loadCustomerOrders();
-        };
-        customerEventSource.onerror = () => setTimeout(initCustomerSSE, 5000);
-    }
-
-    async function loadCurrentUser() {
-        if (!authToken) return;
-        try {
-            const res = await fetch('/api/auth/me', { headers: { 'Authorization': `Bearer ${authToken}` } });
-            if (res.ok) { currentUser = await res.json(); updateAuthUI(); initCustomerSSE(); loadWishlistCount(); }
-            else { localStorage.removeItem('amoura_token'); authToken = null; currentUser = null; updateAuthUI(); }
-        } catch(err){ console.error(err); }
-    }
-
-    function updateAuthUI() {
-        const ui = document.getElementById('user-info');
-        if (currentUser) ui.innerHTML = `<div class="font-medium">${escapeHtml(currentUser.name || currentUser.email)}</div><div class="text-xs text-gray-500">${currentUser.role}</div>`;
-        else ui.innerHTML = '<div class="text-gray-500">Not logged in</div>';
-        const emailField = document.getElementById('customer-email');
-        if (emailField && currentUser && !emailField.value) emailField.value = currentUser.email;
-    }
-
-    document.getElementById('account-btn')?.addEventListener('click', (e) => { e.stopPropagation(); document.getElementById('account-dropdown').classList.toggle('hidden'); });
-    document.addEventListener('click', () => document.getElementById('account-dropdown')?.classList.add('hidden'));
-    document.getElementById('my-orders-link')?.addEventListener('click', (e) => { e.preventDefault(); if (!currentUser) openAuthModal(); else loadCustomerOrders(); });
-    document.getElementById('logout-link')?.addEventListener('click', (e) => { e.preventDefault(); if (customerEventSource) customerEventSource.close(); localStorage.removeItem('amoura_token'); authToken = null; currentUser = null; updateAuthUI(); location.reload(); });
-    document.getElementById('wishlist-btn')?.addEventListener('click', () => openWishlistModal());
-    document.getElementById('wishlist-dropdown-link')?.addEventListener('click', (e) => { e.preventDefault(); openWishlistModal(); });
-    document.getElementById('mobile-wishlist-link')?.addEventListener('click', (e) => { e.preventDefault(); openWishlistModal(); });
-
-    let isLoginMode = true;
-    function openAuthModal() { isLoginMode = true; document.getElementById('auth-modal-title').innerText = 'Login'; document.getElementById('auth-submit').innerText = 'Login'; document.getElementById('auth-toggle-text').innerText = "Don't have an account?"; document.getElementById('auth-name-group').classList.add('hidden'); document.getElementById('auth-modal').style.display = 'flex'; }
-    function closeAuthModal() { document.getElementById('auth-modal').style.display = 'none'; }
-    document.getElementById('auth-toggle-btn')?.addEventListener('click', () => {
-        isLoginMode = !isLoginMode;
-        if (isLoginMode) { document.getElementById('auth-modal-title').innerText = 'Login'; document.getElementById('auth-submit').innerText = 'Login'; document.getElementById('auth-toggle-text').innerText = "Don't have an account?"; document.getElementById('auth-name-group').classList.add('hidden'); }
-        else { document.getElementById('auth-modal-title').innerText = 'Register'; document.getElementById('auth-submit').innerText = 'Register'; document.getElementById('auth-toggle-text').innerText = "Already have an account?"; document.getElementById('auth-name-group').classList.remove('hidden'); }
-    });
-    document.getElementById('auth-submit')?.addEventListener('click', async () => {
-        const email = document.getElementById('auth-email').value.trim(), password = document.getElementById('auth-password').value;
-        if (!email || !password) return alert('Email and password required');
-        const endpoint = isLoginMode ? '/api/auth/login' : '/api/auth/register';
-        const body = { email, password }; if (!isLoginMode) body.name = document.getElementById('auth-name').value.trim();
-        try {
-            const res = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+async function loadProducts(resetPage = true) {
+    if (resetPage) currentPage = 1;
+    const container = document.getElementById('products-container');
+    if (resetPage) container.innerHTML = '<div class="col-span-full text-center py-12">Loading products...</div>';
+    try {
+        let products = [];
+        let total = 0;
+        let totalPagesCalc = 1;
+        if (currentFilters.category === 'all' && !currentFilters.q) {
+            const res = await fetch('/api/products');
             const data = await res.json();
-            if (!res.ok) throw new Error(data.error || 'Authentication failed');
-            authToken = data.token; localStorage.setItem('amoura_token', authToken); currentUser = data.user; updateAuthUI(); closeAuthModal(); initCustomerSSE(); loadWishlistCount();
-        } catch(err) { alert(err.message); }
-    });
-
-    async function loadCustomerOrders() {
-        if (!authToken) return;
-        try {
-            const orders = await (await fetch('/api/customer/orders', { headers: { 'Authorization': `Bearer ${authToken}` } })).json();
-            const container = document.getElementById('orders-list-container');
-            if (!orders.length) container.innerHTML = '<div class="text-center text-gray-500 py-8">You have no orders yet.</div>';
-            else {
-                container.innerHTML = orders.map(o => {
-                    let itemsHtml = '';
-                    try {
-                        const items = JSON.parse(o.items || '[]');
-                        itemsHtml = items.map(i => `
-                            <div class="flex gap-3 items-center border-b pb-2 mb-2">
-                                <img src="${i.image_url || 'https://placehold.co/40x50/e2e2e2/black?text=No+Img'}" class="w-10 h-12 object-cover rounded">
-                                <div class="flex-1">
-                                    <div>${escapeHtml(i.name)} ${i.size ? `(${i.size})` : ''} ${i.color ? `- ${i.color}` : ''}</div>
-                                    <div class="flex justify-between text-sm"><span>Qty: ${i.quantity}</span><span>BDT ${i.price}</span></div>
-                                </div>
-                            </div>
-                        `).join('');
-                    } catch(e) { itemsHtml = 'Unable to load items'; }
-                    return `<div class="border rounded-lg p-4"><div class="flex justify-between flex-wrap gap-2"><div><strong>Order #${escapeHtml(o.order_number || o.id)}</strong><br>${new Date(o.created_at).toLocaleDateString()}</div><div class="text-right"><span class="font-semibold">BDT ${parseFloat(o.final_amount || o.total_amount || 0).toFixed(2)}</span><br><span class="text-sm capitalize">${escapeHtml(o.order_status || 'pending')}</span><br><span class="text-xs">Payment: ${getPaymentStatusBadge(o.payment_status)}</span></div></div><div class="mt-2">${itemsHtml}</div></div>`;
-                }).join('');
-            }
-            document.getElementById('orders-modal').style.display = 'flex';
-        } catch(err) { alert('Could not load your orders.'); }
-    }
-    function closeOrdersModal() { document.getElementById('orders-modal').style.display = 'none'; }
-
-    function saveCart() { localStorage.setItem('amoura_cart', JSON.stringify(cart)); updateCartUI(); }
-    function updateCartUI() {
-        const subtotal = cart.reduce((s, i) => s + (i.price * i.quantity), 0);
-        const total = subtotal - couponDiscount;
-        document.getElementById('cart-total-price').innerText = `BDT ${Math.max(0, total).toFixed(2)}`;
-        const totalItems = cart.reduce((s, i) => s + i.quantity, 0);
-        document.getElementById('cart-count').innerText = totalItems;
-        document.getElementById('cart-count').style.opacity = totalItems ? '1' : '0';
-        const container = document.getElementById('cart-items-list');
-        if (!cart.length) container.innerHTML = '<p class="text-center text-gray-500 py-12">Your cart is empty</p>';
-        else {
-            container.innerHTML = cart.map((item, idx) => `
-                <div class="flex gap-3 border-b pb-3">
-                    <img src="${item.image_url || 'https://placehold.co/70x90/e2e2e2/black?text=COLONIAL'}" class="w-16 h-20 object-cover bg-gray-100 rounded">
-                    <div class="flex-1">
-                        <p class="font-medium text-sm">${escapeHtml(item.name)}</p>
-                        <p class="text-xs text-gray-500">Size: ${item.size || 'M'} | Colour: ${item.color || 'Default'}</p>
-                        <p class="text-sm text-gray-600 mt-1">BDT ${item.price}</p>
-                        <div class="flex items-center gap-2 mt-2">
-                            <button onclick="changeQty(${idx}, -1)" class="w-6 h-6 border rounded-full flex items-center justify-center text-xs">-</button>
-                            <span class="w-6 text-center text-sm">${item.quantity}</span>
-                            <button onclick="changeQty(${idx}, 1)" class="w-6 h-6 border rounded-full flex items-center justify-center text-xs">+</button>
-                            <button onclick="removeFromCart(${idx})" class="text-red-500 text-xs ml-2 underline">Remove</button>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-        }
-        lucide.createIcons();
-    }
-    function changeQty(idx, delta) { let q = cart[idx].quantity + delta; if (q <= 0) cart.splice(idx, 1); else cart[idx].quantity = q; saveCart(); }
-    function removeFromCart(idx) { cart.splice(idx, 1); saveCart(); }
-    function addToCart(product, qty = 1) {
-        const size = selectedSize || 'M';
-        const color = selectedColor.name || 'Default';
-        const existing = cart.find(i => i.id === product.id && i.size === size && i.color === color);
-        if (existing) existing.quantity += qty;
-        else cart.push({ ...product, quantity: qty, size, color, image_url: product.image_url || (product.images?.[0] || '') });
-        saveCart();
-        toggleCart();
-    }
-    function toggleCart() { document.getElementById('cart-drawer').classList.toggle('translate-x-full'); document.getElementById('cart-overlay').classList.toggle('opacity-0'); document.getElementById('cart-overlay').classList.toggle('invisible'); document.body.style.overflow = document.getElementById('cart-drawer').classList.contains('translate-x-full') ? '' : 'hidden'; }
-    function toggleMenu() { document.getElementById('mobile-menu').classList.toggle('-translate-x-full'); }
-
-    function getSlideWidth() { const first = document.querySelector('#product-carousel .flex-shrink-0'); if (!first) return 352; const style = getComputedStyle(first); return first.offsetWidth + parseFloat(style.marginLeft) + parseFloat(style.marginRight); }
-    function updateCarouselPosition() { const container = document.getElementById('product-carousel'); if (container) container.style.transform = `translateX(-${currentSlide * getSlideWidth()}px)`; }
-    async function loadCarouselProducts() { try { const res = await fetch('/api/products?limit=6'); carouselProducts = (await res.json()).slice(0, 6); renderCarousel(); startAutoSlide(); window.addEventListener('resize', updateCarouselPosition); } catch(e) { console.error(e); } }
-    function renderCarousel() {
-        const container = document.getElementById('product-carousel');
-        if (!container) return;
-        if (!carouselProducts.length) { container.innerHTML = '<div class="w-full text-center py-12 text-gray-500">No products</div>'; return; }
-        container.innerHTML = carouselProducts.map(p => `<div class="flex-shrink-0 w-64 md:w-80 mx-3 md:mx-4 bg-white rounded-xl shadow-lg overflow-hidden transition-transform hover:scale-105 duration-300"><img src="${p.image_url || 'https://placehold.co/400x500/e2e2e2/black?text=COLONIAL'}" class="w-full h-48 md:h-64 object-cover"><div class="p-3 md:p-4 text-center"><h3 class="font-serif text-lg md:text-xl mb-1">${escapeHtml(p.name)}</h3><p class="text-gray-600 text-sm">BDT ${p.final_price || p.price}</p><button onclick="addToCart({id:${p.id}, name:'${p.name.replace(/'/g, "\\'")}', price:${p.final_price || p.price}, image_url:'${p.image_url}'}, 1)" class="mt-3 bg-black text-white px-3 py-1 text-xs rounded-full hover:bg-gray-800 transition">Quick Shop</button></div></div>`).join('');
-        lucide.createIcons();
-        updateCarouselPosition();
-    }
-    function startAutoSlide() { if (slideInterval) clearInterval(slideInterval); slideInterval = setInterval(() => { if (carouselProducts.length) { currentSlide = (currentSlide + 1) % carouselProducts.length; updateCarouselPosition(); } }, 5000); }
-    function nextSlide() { if (!carouselProducts.length) return; currentSlide = (currentSlide + 1) % carouselProducts.length; updateCarouselPosition(); resetAutoSlide(); }
-    function prevSlide() { if (!carouselProducts.length) return; currentSlide = (currentSlide - 1 + carouselProducts.length) % carouselProducts.length; updateCarouselPosition(); resetAutoSlide(); }
-    function resetAutoSlide() { if (slideInterval) clearInterval(slideInterval); slideInterval = setInterval(() => { currentSlide = (currentSlide + 1) % carouselProducts.length; updateCarouselPosition(); }, 5000); }
-
-    // ------------------- FIXED loadProducts: uses /api/products for default view -------------------
-    async function loadProducts(resetPage = true) {
-        if (resetPage) currentPage = 1;
-        const container = document.getElementById('products-container');
-        if (resetPage) container.innerHTML = '<div class="col-span-full text-center py-12">Loading products...</div>';
-
-        try {
-            let products = [];
-            let total = 0;
-            let totalPagesCalc = 1;
-
-            // If no search query and category is 'all', use the simple /api/products endpoint (which definitely works)
-            if (currentFilters.category === 'all' && !currentFilters.q) {
-                const res = await fetch('/api/products');
-                const data = await res.json();
-                products = data;
-                total = products.length;
-                totalPagesCalc = Math.ceil(total / 8);
-            } else {
-                // Otherwise use the search endpoint
-                const params = new URLSearchParams({
-                    q: currentFilters.q,
-                    category: currentFilters.category,
-                    sort: currentFilters.sort,
-                    page: currentPage,
-                    limit: 8
-                });
-                const res = await fetch(`/api/products/search?${params}`);
-                const data = await res.json();
-                products = data.products;
-                total = data.total;
-                totalPagesCalc = data.totalPages || Math.ceil(total / 8);
-            }
-
-            container.innerHTML = '';
-            if (!products.length) {
-                container.innerHTML = '<div class="col-span-full text-center py-12 text-gray-500">No products found.</div>';
-                document.getElementById('load-more').classList.add('hidden');
-                return;
-            }
-
-            products.forEach(p => {
-                const card = document.createElement('div');
-                card.className = 'product-card group bg-white rounded-xl overflow-hidden shadow-sm cursor-pointer';
-                card.innerHTML = `<div class="relative aspect-[3/4] overflow-hidden bg-gray-100"><img src="${p.image_url || 'https://placehold.co/600x800/e2e2e2/black?text=COLONIAL'}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">${p.badge ? `<span class="absolute top-2 left-2 bg-white text-black text-xs px-2 py-1 rounded-full z-10">${escapeHtml(p.badge)}</span>` : ''}<div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition flex items-end p-3"><button class="w-full bg-white text-black py-2 text-xs uppercase tracking-wider font-medium rounded" onclick="event.stopPropagation(); addToCart({id:${p.id}, name:'${p.name.replace(/'/g, "\\'")}', price:${p.final_price || p.price}, image_url:'${p.image_url}'}, 1)">Quick Add</button></div></div><div class="p-4"><h3 class="font-medium text-gray-900">${escapeHtml(p.name)}</h3><div class="flex items-center gap-2 mt-1"><span class="font-semibold">BDT ${p.final_price || p.price}</span>${p.discount_amount > 0 ? `<span class="text-sm text-gray-400 line-through">BDT ${p.price}</span>` : ''}${p.discount_percent > 0 ? `<span class="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded">-${p.discount_percent}%</span>` : ''}</div>${p.colors && p.colors.length ? `<div class="flex gap-1 mt-2">${p.colors.slice(0,3).map(c => `<div class="w-3 h-3 rounded-full border border-gray-300" style="background-color:${c}"></div>`).join('')}</div>` : ''}</div>`;
-                card.onclick = () => openProductModal(p);
-                container.appendChild(card);
-            });
-
-            totalPages = totalPagesCalc;
-            document.getElementById('load-more').classList.toggle('hidden', currentPage >= totalPages);
-        } catch (err) {
-            console.error('Load products error:', err);
-            container.innerHTML = '<div class="col-span-full text-center py-12 text-red-500">Error loading products. Please refresh.</div>';
-        }
-    }
-
-    async function loadCategories() { const prods = await (await fetch('/api/products')).json(); const cats = ['all', ...new Set(prods.map(p => p.category))]; document.getElementById('category-filter').innerHTML = cats.map(cat => `<option value="${cat}">${cat === 'all' ? 'All Categories' : cat}</option>`).join(''); }
-    function filterByCategory(cat) { document.getElementById('category-filter').value = cat; currentFilters.category = cat; loadProducts(true); }
-    window.filterByCategory = filterByCategory;
-
-    let currentProductImages = [];
-    async function openProductModal(product) {
-        currentProduct = product;
-        document.getElementById('modal-name').innerText = product.name;
-        document.getElementById('modal-price').innerHTML = `BDT ${product.final_price || product.price}`;
-        document.getElementById('modal-desc').innerText = product.description || 'Premium quality garment.';
-        currentProductImages = (product.images?.length) ? [...product.images] : (product.image_url ? [product.image_url] : []);
-        document.getElementById('modal-main-img').src = currentProductImages[0] || 'https://placehold.co/600x800/e2e2e2/black?text=COLONIAL';
-        const thumbsContainer = document.getElementById('modal-thumbnails');
-        thumbsContainer.innerHTML = currentProductImages.slice(1).map(img => `<img src="${img}" class="thumbnail-img w-16 h-20 object-cover rounded cursor-pointer border-2 border-transparent" onclick="changeMainImage('${img}', this)">`).join('');
-        document.querySelectorAll('#size-options .size-btn').forEach(btn => btn.classList.remove('active'));
-        document.querySelector('#size-options .size-btn[data-size="M"]').classList.add('active');
-        selectedSize = 'M';
-        const colors = product.colors || [];
-        const swatchDiv = document.getElementById('color-swatches');
-        if (!colors.length) {
-            swatchDiv.innerHTML = '<p class="text-gray-400 text-sm">No colour options</p>';
-            selectedColor = { hex: '', name: 'Default' };
-            document.getElementById('selected-color-name').innerText = '';
+            products = data;
+            total = products.length;
+            totalPagesCalc = Math.ceil(total / 8);
         } else {
-            swatchDiv.innerHTML = colors.map(c => `<div class="color-swatch" style="background-color: ${c};" data-color-hex="${c}" data-color-name="${c === '#000000' ? 'Black' : c === '#ffffff' ? 'White' : c}"></div>`).join('');
-            const first = document.querySelector('.color-swatch');
-            if (first) {
-                first.classList.add('selected');
-                selectedColor = { hex: first.dataset.colorHex, name: first.dataset.colorName };
-                document.getElementById('selected-color-name').innerText = `Selected: ${selectedColor.name}`;
-            }
-            document.querySelectorAll('.color-swatch').forEach(sw => sw.addEventListener('click', () => {
-                document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
-                sw.classList.add('selected');
-                selectedColor = { hex: sw.dataset.colorHex, name: sw.dataset.colorName };
-                document.getElementById('selected-color-name').innerText = `Selected: ${selectedColor.name}`;
-            }));
-        }
-        const inWishlist = wishlist.includes(product.id);
-        const heartIcon = document.getElementById('modal-wishlist-btn')?.querySelector('i');
-        if (heartIcon) inWishlist ? heartIcon.classList.add('fill-red-500') : heartIcon.classList.remove('fill-red-500');
-        await loadReviews(product.id);
-        document.getElementById('product-modal').style.display = 'flex';
-    }
-    function changeMainImage(url, el) { document.getElementById('modal-main-img').src = url; document.querySelectorAll('.thumbnail-img').forEach(img => img.classList.remove('border-black', 'border-2')); el.classList.add('border-black', 'border-2'); }
-    function openLightbox() {
-        if (!currentProductImages.length) return;
-        let idx = 0;
-        const modal = document.createElement('div');
-        modal.className = 'fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4';
-        modal.innerHTML = `<button class="absolute top-4 right-4 text-white text-2xl z-10" onclick="this.parentElement.remove()">✕</button><button class="absolute left-4 top-1/2 -translate-y-1/2 bg-white/20 p-2 rounded-full text-white" id="lightbox-prev">◀</button><img id="lightbox-img" class="max-h-[90vh] max-w-[90vw] object-contain"><button class="absolute right-4 top-1/2 -translate-y-1/2 bg-white/20 p-2 rounded-full text-white" id="lightbox-next">▶</button>`;
-        document.body.appendChild(modal);
-        const imgEl = document.getElementById('lightbox-img');
-        imgEl.src = currentProductImages[0];
-        document.getElementById('lightbox-prev').onclick = () => { idx = (idx - 1 + currentProductImages.length) % currentProductImages.length; imgEl.src = currentProductImages[idx]; };
-        document.getElementById('lightbox-next').onclick = () => { idx = (idx + 1) % currentProductImages.length; imgEl.src = currentProductImages[idx]; };
-    }
-    function closeProductModal() { document.getElementById('product-modal').style.display = 'none'; }
-    function addCurrentToCart() { if (currentProduct) addToCart(currentProduct, 1); closeProductModal(); }
-
-    const reviewStars = document.querySelectorAll('#review-stars .star');
-    reviewStars.forEach(star => {
-        star.addEventListener('mouseenter', () => highlightStars(parseInt(star.dataset.rating)));
-        star.addEventListener('mouseleave', () => highlightStars(currentRating));
-        star.addEventListener('click', () => { currentRating = parseInt(star.dataset.rating); highlightStars(currentRating); });
-    });
-    function highlightStars(rating) { reviewStars.forEach((star, idx) => idx < rating ? star.classList.add('active') : star.classList.remove('active')); }
-    document.getElementById('submit-review-btn')?.addEventListener('click', async () => {
-        if (!currentProduct) return;
-        const comment = document.getElementById('review-comment').value.trim();
-        if (!currentRating) { alert('Please select a rating'); return; }
-        await submitReview(currentProduct.id, currentRating, comment);
-        document.getElementById('review-comment').value = '';
-        currentRating = 0;
-        highlightStars(0);
-    });
-    document.getElementById('modal-wishlist-btn')?.addEventListener('click', () => { if (currentProduct) toggleWishlist(currentProduct.id); });
-
-    const paymentRadios = document.querySelectorAll('input[name="payment_method"]');
-    const manualDiv = document.getElementById('manual-payment-details');
-    if (paymentRadios.length && manualDiv) paymentRadios.forEach(radio => radio.addEventListener('change', () => document.querySelector('input[name="payment_method"]:checked')?.value === 'bkash' ? manualDiv.classList.remove('hidden') : manualDiv.classList.add('hidden')));
-
-    document.getElementById('apply-coupon-btn')?.addEventListener('click', async () => {
-        const code = document.getElementById('coupon-code').value.trim();
-        if (!code) return;
-        const subtotal = cart.reduce((s, i) => s + i.price * i.quantity, 0);
-        try {
-            const res = await fetch('/api/validate-coupon', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code, cartTotal: subtotal }) });
+            const params = new URLSearchParams({ q: currentFilters.q, category: currentFilters.category, sort: currentFilters.sort, page: currentPage, limit: 8 });
+            const res = await fetch(`/api/products/search?${params}`);
             const data = await res.json();
-            if (!res.ok) throw new Error(data.error);
-            appliedCoupon = code; couponDiscount = data.discount;
-            document.getElementById('coupon-feedback').innerHTML = `<span class="text-green-600">Coupon applied! You save BDT ${couponDiscount}</span>`;
-            updateCartUI();
-        } catch(err) { document.getElementById('coupon-feedback').innerHTML = `<span class="text-red-600">${err.message}</span>`; }
-    });
-    function openCheckout() { if (!cart.length) { alert('Your cart is empty.'); return; } document.getElementById('checkout-modal').style.display = 'flex'; }
-    function closeCheckout() { document.getElementById('checkout-modal').style.display = 'none'; }
-    async function placeOrder() {
-        if (!cart.length) { alert('Your cart is empty. Add some products first.'); return; }
-
-        const name = document.getElementById('customer-name').value.trim();
-        const email = document.getElementById('customer-email').value.trim();
-        const phone = document.getElementById('customer-phone').value.trim();
-        const address = document.getElementById('shipping-address').value.trim();
-        if (!name || !email) { alert('Name and email are required'); return; }
-
-        const payment_method = document.querySelector('input[name="payment_method"]:checked')?.value || 'cash_on_delivery';
-        let transaction_id = null;
-        if (payment_method === 'bkash') {
-            transaction_id = document.getElementById('transaction-id')?.value.trim();
-            if (!transaction_id) { alert('Please enter the transaction ID after sending payment to +8801871330654.'); return; }
+            products = data.products;
+            total = data.total;
+            totalPagesCalc = data.totalPages || Math.ceil(total / 8);
         }
+        container.innerHTML = '';
+        if (!products.length) {
+            container.innerHTML = '<div class="col-span-full text-center py-12 text-gray-500">No products found.</div>';
+            document.getElementById('load-more').classList.add('hidden');
+            return;
+        }
+        products.forEach(p => {
+            const card = document.createElement('div');
+            card.className = 'product-card group bg-white rounded-xl overflow-hidden shadow-sm cursor-pointer';
+            card.innerHTML = `<div class="relative aspect-[3/4] overflow-hidden bg-gray-100"><img src="${p.image_url || 'https://placehold.co/600x800/e2e2e2/black?text=COLONIAL'}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">${p.badge ? `<span class="absolute top-2 left-2 bg-white text-black text-xs px-2 py-1 rounded-full z-10">${escapeHtml(p.badge)}</span>` : ''}<div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition flex items-end p-3"><button class="w-full bg-white text-black py-2 text-xs uppercase tracking-wider font-medium rounded" onclick="event.stopPropagation(); addToCart({id:${p.id}, name:'${p.name.replace(/'/g, "\\'")}', price:${p.final_price || p.price}, image_url:'${p.image_url}'}, 1)">Quick Add</button></div></div><div class="p-4"><h3 class="font-medium text-gray-900">${escapeHtml(p.name)}</h3><div class="flex items-center gap-2 mt-1"><span class="font-semibold">BDT ${p.final_price || p.price}</span>${p.discount_amount > 0 ? `<span class="text-sm text-gray-400 line-through">BDT ${p.price}</span>` : ''}${p.discount_percent > 0 ? `<span class="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded">-${p.discount_percent}%</span>` : ''}</div>${p.colors && p.colors.length ? `<div class="flex gap-1 mt-2">${p.colors.slice(0,3).map(c => `<div class="w-3 h-3 rounded-full border border-gray-300" style="background-color:${c}"></div>`).join('')}</div>` : ''}</div>`;
+            card.onclick = () => openProductModal(p);
+            container.appendChild(card);
+        });
+        totalPages = totalPagesCalc;
+        document.getElementById('load-more').classList.toggle('hidden', currentPage >= totalPages);
+    } catch (err) {
+        console.error('Load products error:', err);
+        container.innerHTML = '<div class="col-span-full text-center py-12 text-red-500">Error loading products. Please refresh.</div>';
+    }
+}
 
-        const items = cart.map(i => ({
-            id: i.id, name: i.name, price: i.price, quantity: i.quantity,
-            size: i.size || 'M', color: i.color || 'Default', image_url: i.image_url || ''
+async function loadCategories() { const prods = await (await fetch('/api/products')).json(); const cats = ['all', ...new Set(prods.map(p => p.category))]; document.getElementById('category-filter').innerHTML = cats.map(cat => `<option value="${cat}">${cat === 'all' ? 'All Categories' : cat}</option>`).join(''); }
+function filterByCategory(cat) { document.getElementById('category-filter').value = cat; currentFilters.category = cat; loadProducts(true); }
+window.filterByCategory = filterByCategory;
+
+let currentProductImages = [];
+async function openProductModal(product) {
+    currentProduct = product;
+    document.getElementById('modal-name').innerText = product.name;
+    document.getElementById('modal-price').innerHTML = `BDT ${product.final_price || product.price}`;
+    document.getElementById('modal-desc').innerText = product.description || 'Premium quality garment.';
+    currentProductImages = (product.images?.length) ? [...product.images] : (product.image_url ? [product.image_url] : []);
+    document.getElementById('modal-main-img').src = currentProductImages[0] || 'https://placehold.co/600x800/e2e2e2/black?text=COLONIAL';
+    const thumbsContainer = document.getElementById('modal-thumbnails');
+    thumbsContainer.innerHTML = currentProductImages.slice(1).map(img => `<img src="${img}" class="thumbnail-img w-16 h-20 object-cover rounded cursor-pointer border-2 border-transparent" onclick="changeMainImage('${img}', this)">`).join('');
+    document.querySelectorAll('#size-options .size-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelector('#size-options .size-btn[data-size="M"]').classList.add('active');
+    selectedSize = 'M';
+    const colors = product.colors || [];
+    const swatchDiv = document.getElementById('color-swatches');
+    if (!colors.length) {
+        swatchDiv.innerHTML = '<p class="text-gray-400 text-sm">No colour options</p>';
+        selectedColor = { hex: '', name: 'Default' };
+        document.getElementById('selected-color-name').innerText = '';
+    } else {
+        swatchDiv.innerHTML = colors.map(c => `<div class="color-swatch" style="background-color: ${c};" data-color-hex="${c}" data-color-name="${c === '#000000' ? 'Black' : c === '#ffffff' ? 'White' : c}"></div>`).join('');
+        const first = document.querySelector('.color-swatch');
+        if (first) {
+            first.classList.add('selected');
+            selectedColor = { hex: first.dataset.colorHex, name: first.dataset.colorName };
+            document.getElementById('selected-color-name').innerText = `Selected: ${selectedColor.name}`;
+        }
+        document.querySelectorAll('.color-swatch').forEach(sw => sw.addEventListener('click', () => {
+            document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
+            sw.classList.add('selected');
+            selectedColor = { hex: sw.dataset.colorHex, name: sw.dataset.colorName };
+            document.getElementById('selected-color-name').innerText = `Selected: ${selectedColor.name}`;
         }));
+    }
+    const inWishlist = wishlist.includes(product.id);
+    const heartIcon = document.getElementById('modal-wishlist-btn')?.querySelector('i');
+    if (heartIcon) inWishlist ? heartIcon.classList.add('fill-red-500') : heartIcon.classList.remove('fill-red-500');
+    await loadReviews(product.id);
+    document.getElementById('product-modal').style.display = 'flex';
+}
+function changeMainImage(url, el) { document.getElementById('modal-main-img').src = url; document.querySelectorAll('.thumbnail-img').forEach(img => img.classList.remove('border-black', 'border-2')); el.classList.add('border-black', 'border-2'); }
+function openLightbox() {
+    if (!currentProductImages.length) return;
+    let idx = 0;
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4';
+    modal.innerHTML = `<button class="absolute top-4 right-4 text-white text-2xl z-10" onclick="this.parentElement.remove()">✕</button><button class="absolute left-4 top-1/2 -translate-y-1/2 bg-white/20 p-2 rounded-full text-white" id="lightbox-prev">◀</button><img id="lightbox-img" class="max-h-[90vh] max-w-[90vw] object-contain"><button class="absolute right-4 top-1/2 -translate-y-1/2 bg-white/20 p-2 rounded-full text-white" id="lightbox-next">▶</button>`;
+    document.body.appendChild(modal);
+    const imgEl = document.getElementById('lightbox-img');
+    imgEl.src = currentProductImages[0];
+    document.getElementById('lightbox-prev').onclick = () => { idx = (idx - 1 + currentProductImages.length) % currentProductImages.length; imgEl.src = currentProductImages[idx]; };
+    document.getElementById('lightbox-next').onclick = () => { idx = (idx + 1) % currentProductImages.length; imgEl.src = currentProductImages[idx]; };
+}
+function closeProductModal() { document.getElementById('product-modal').style.display = 'none'; }
+function addCurrentToCart() { if (currentProduct) addToCart(currentProduct, 1); closeProductModal(); }
 
-        console.log('📦 Order items:', items);
-        console.log('📦 Order data:', { customer_name: name, customer_email: email, customer_phone: phone, shipping_address: address });
+const reviewStars = document.querySelectorAll('#review-stars .star');
+reviewStars.forEach(star => {
+    star.addEventListener('mouseenter', () => highlightStars(parseInt(star.dataset.rating)));
+    star.addEventListener('mouseleave', () => highlightStars(currentRating));
+    star.addEventListener('click', () => { currentRating = parseInt(star.dataset.rating); highlightStars(currentRating); });
+});
+function highlightStars(rating) { reviewStars.forEach((star, idx) => idx < rating ? star.classList.add('active') : star.classList.remove('active')); }
+document.getElementById('submit-review-btn')?.addEventListener('click', async () => {
+    if (!currentProduct) return;
+    const comment = document.getElementById('review-comment').value.trim();
+    if (!currentRating) { alert('Please select a rating'); return; }
+    await submitReview(currentProduct.id, currentRating, comment);
+    document.getElementById('review-comment').value = '';
+    currentRating = 0;
+    highlightStars(0);
+});
+document.getElementById('modal-wishlist-btn')?.addEventListener('click', () => { if (currentProduct) toggleWishlist(currentProduct.id); });
 
-        const subtotal = cart.reduce((s, i) => s + i.price * i.quantity, 0);
-        const finalAmount = Math.max(0, subtotal - couponDiscount);
+// ========== DYNAMIC PAYMENT INSTRUCTION & DELIVERY HANDLING ==========
+function updatePaymentInstruction() {
+    const selectedPayment = document.querySelector('input[name="payment_method"]:checked')?.value;
+    const deliveryRadio = document.querySelector('input[name="delivery_option"]:checked');
+    const deliveryFee = deliveryRadio ? parseInt(deliveryRadio.dataset.fee) : 80;
+    const productTotal = cart.reduce((sum, i) => sum + (i.price * i.quantity), 0);
+    const fullAmount = productTotal + deliveryFee;
+    
+    const heading = document.getElementById('payment-instruction-heading');
+    const subText = document.getElementById('payment-instruction-sub');
+    const amountSpan = document.getElementById('payable-amount');
+    
+    if (selectedPayment === 'bkash') {
+        if (heading) heading.textContent = 'bKash / Nagad Payment (Full Amount):';
+        if (subText) subText.textContent = 'Pay the full amount (product price + delivery charge) and enter the transaction ID below.';
+        if (amountSpan) amountSpan.textContent = `BDT ${fullAmount.toFixed(2)}`;
+    } else {
+        if (heading) heading.textContent = 'Cash on Delivery (Advance Delivery Charge):';
+        if (subText) subText.textContent = 'Pay only the delivery charge in advance and enter the transaction ID. The product price will be paid upon delivery.';
+        if (amountSpan) amountSpan.textContent = `BDT ${deliveryFee.toFixed(2)}`;
+    }
+}
 
-        const orderData = {
-            customer_name: name, customer_email: email, customer_phone: phone, shipping_address: address,
-            total_amount: subtotal, discount_applied: couponDiscount, final_amount: finalAmount,
-            items, coupon_code: appliedCoupon, notes: '',
-            payment_method, transaction_id
-        };
+// Attach event listeners for delivery and payment method changes
+document.addEventListener('DOMContentLoaded', function() {
+    const deliveryRadios = document.querySelectorAll('input[name="delivery_option"]');
+    const paymentRadios = document.querySelectorAll('input[name="payment_method"]');
+    deliveryRadios.forEach(radio => radio.addEventListener('change', updatePaymentInstruction));
+    paymentRadios.forEach(radio => radio.addEventListener('change', updatePaymentInstruction));
+    updatePaymentInstruction();
+});
 
-        try {
-            const headers = { 'Content-Type': 'application/json' };
-            if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
-            const res = await fetch('/api/orders', { method: 'POST', headers, body: JSON.stringify(orderData) });
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.error || 'Order failed');
-            alert(`Order placed successfully! ${payment_method === 'bkash' ? 'Your payment is pending verification.' : 'You will pay upon delivery.'}`);
-            cart = []; couponDiscount = 0; appliedCoupon = null; saveCart();
-            closeCheckout(); toggleCart();
-            document.getElementById('customer-name').value = '';
-            document.getElementById('customer-email').value = '';
-            document.getElementById('customer-phone').value = '';
-            document.getElementById('shipping-address').value = '';
-            document.getElementById('coupon-code').value = '';
-            document.getElementById('coupon-feedback').innerHTML = '';
-            if (document.getElementById('transaction-id')) document.getElementById('transaction-id').value = '';
-            const codRadio = document.querySelector('input[name="payment_method"][value="cash_on_delivery"]');
-            if (codRadio) codRadio.checked = true;
-            if (manualDiv) manualDiv.classList.add('hidden');
-        } catch(err) { alert(err.message); }
+// Ensure transaction ID section is always visible
+const manualDiv = document.getElementById('manual-payment-details');
+if (manualDiv) manualDiv.classList.remove('hidden');
+
+document.getElementById('apply-coupon-btn')?.addEventListener('click', async () => {
+    const code = document.getElementById('coupon-code').value.trim();
+    if (!code) return;
+    const subtotal = cart.reduce((s, i) => s + i.price * i.quantity, 0);
+    try {
+        const res = await fetch('/api/validate-coupon', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code, cartTotal: subtotal }) });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+        appliedCoupon = code; couponDiscount = data.discount;
+        document.getElementById('coupon-feedback').innerHTML = `<span class="text-green-600">Coupon applied! You save BDT ${couponDiscount}</span>`;
+        updateCartUI();
+    } catch(err) { document.getElementById('coupon-feedback').innerHTML = `<span class="text-red-600">${err.message}</span>`; }
+});
+
+function openCheckout() { if (!cart.length) { alert('Your cart is empty.'); return; } document.getElementById('checkout-modal').style.display = 'flex'; }
+function closeCheckout() { document.getElementById('checkout-modal').style.display = 'none'; }
+
+// ========== UPDATED placeOrder with mandatory delivery fee & transaction ID ==========
+async function placeOrder() {
+    if (!cart.length) { alert('Your cart is empty. Add some products first.'); return; }
+
+    const name = document.getElementById('customer-name').value.trim();
+    const email = document.getElementById('customer-email').value.trim();
+    const phone = document.getElementById('customer-phone').value.trim();
+    const address = document.getElementById('shipping-address').value.trim();
+    if (!name || !email) { alert('Name and email are required'); return; }
+
+    const deliveryRadio = document.querySelector('input[name="delivery_option"]:checked');
+    if (!deliveryRadio) {
+        alert('Please select a delivery option.');
+        return;
+    }
+    const delivery_method = deliveryRadio.value === 'inside' ? 'Inside Chittagong' : 'Outside Chittagong';
+    const delivery_fee = parseInt(deliveryRadio.dataset.fee);
+    if (isNaN(delivery_fee) || delivery_fee <= 0) {
+        alert('Invalid delivery fee. Please refresh and try again.');
+        return;
     }
 
-    document.getElementById('search-input')?.addEventListener('input', (e) => { currentFilters.q = e.target.value; loadProducts(true); });
-    document.getElementById('category-filter')?.addEventListener('change', (e) => { currentFilters.category = e.target.value; loadProducts(true); });
-    document.getElementById('sort-select')?.addEventListener('change', (e) => { currentFilters.sort = e.target.value; loadProducts(true); });
-    document.getElementById('load-more')?.addEventListener('click', () => { currentPage++; loadProducts(false); });
-    document.addEventListener('click', (e) => {
-        if (e.target.classList?.contains('size-btn')) {
-            document.querySelectorAll('#size-options .size-btn').forEach(btn => btn.classList.remove('active'));
-            e.target.classList.add('active');
-            selectedSize = e.target.getAttribute('data-size');
-        }
-    });
-    document.getElementById('prev-btn')?.addEventListener('click', () => prevSlide());
-    document.getElementById('next-btn')?.addEventListener('click', () => nextSlide());
+    const payment_method = document.querySelector('input[name="payment_method"]:checked')?.value || 'cash_on_delivery';
+    
+    let transaction_id = document.getElementById('transaction-id')?.value.trim();
+    if (!transaction_id) {
+        const txnError = document.getElementById('txn-error');
+        if (txnError) txnError.classList.remove('hidden');
+        alert('Please enter the transaction ID after sending payment to +8801871330654.');
+        return;
+    } else {
+        const txnError = document.getElementById('txn-error');
+        if (txnError) txnError.classList.add('hidden');
+    }
 
-    loadCategories();
-    loadProducts();
-    loadCarouselProducts();
-    updateCartUI();
-    loadCurrentUser();
+    const items = cart.map(i => ({
+        id: i.id, name: i.name, price: i.price, quantity: i.quantity,
+        size: i.size || 'M', color: i.color || 'Default', image_url: i.image_url || ''
+    }));
+
+    const subtotal = cart.reduce((s, i) => s + (i.price * i.quantity), 0) + delivery_fee;
+    const finalAmount = Math.max(0, subtotal - couponDiscount);
+
+    const orderData = {
+        customer_name: name, customer_email: email, customer_phone: phone, shipping_address: address,
+        total_amount: subtotal, discount_applied: couponDiscount, final_amount: finalAmount,
+        items, coupon_code: appliedCoupon, notes: '',
+        payment_method, transaction_id,
+        delivery_method, delivery_fee
+    };
+
+    try {
+        const headers = { 'Content-Type': 'application/json' };
+        if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
+        const res = await fetch('/api/orders', { method: 'POST', headers, body: JSON.stringify(orderData) });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Order failed');
+        alert(`Order placed successfully! Your transaction ID (${transaction_id}) will be verified by admin.`);
+        cart = []; couponDiscount = 0; appliedCoupon = null; saveCart();
+        closeCheckout(); toggleCart();
+        document.getElementById('customer-name').value = '';
+        document.getElementById('customer-email').value = '';
+        document.getElementById('customer-phone').value = '';
+        document.getElementById('shipping-address').value = '';
+        document.getElementById('coupon-code').value = '';
+        document.getElementById('coupon-feedback').innerHTML = '';
+        if (document.getElementById('transaction-id')) document.getElementById('transaction-id').value = '';
+        const codRadio = document.querySelector('input[name="payment_method"][value="cash_on_delivery"]');
+        if (codRadio) codRadio.checked = true;
+        const insideRadio = document.querySelector('input[name="delivery_option"][value="inside"]');
+        if (insideRadio) insideRadio.checked = true;
+        updatePaymentInstruction();
+    } catch(err) { alert(err.message); }
+}
+
+document.getElementById('search-input')?.addEventListener('input', (e) => { currentFilters.q = e.target.value; loadProducts(true); });
+document.getElementById('category-filter')?.addEventListener('change', (e) => { currentFilters.category = e.target.value; loadProducts(true); });
+document.getElementById('sort-select')?.addEventListener('change', (e) => { currentFilters.sort = e.target.value; loadProducts(true); });
+document.getElementById('load-more')?.addEventListener('click', () => { currentPage++; loadProducts(false); });
+document.addEventListener('click', (e) => {
+    if (e.target.classList?.contains('size-btn')) {
+        document.querySelectorAll('#size-options .size-btn').forEach(btn => btn.classList.remove('active'));
+        e.target.classList.add('active');
+        selectedSize = e.target.getAttribute('data-size');
+    }
+});
+document.getElementById('prev-btn')?.addEventListener('click', () => prevSlide());
+document.getElementById('next-btn')?.addEventListener('click', () => nextSlide());
+
+loadCategories();
+loadProducts();
+loadCarouselProducts();
+updateCartUI();
+loadCurrentUser();
 </script>
+    
 </body>
 </html>
