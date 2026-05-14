@@ -447,16 +447,22 @@ header {
     font-size: 8px;
     padding: 3px 8px;
   }
-  /* Improve touch targets */
-  button, 
+  /* FIXED: No `a` tag here – only buttons and interactive UI elements */
+  button,
   .size-btn,
   .quantity-btn,
-  .filter-btn,
-  a {
+  .filter-btn {
     min-height: 44px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
+  }
+  /* Keep nav links touch-friendly without breaking layout */
+  header a,
+  .nav-link {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
   }
   /* Prevent input zoom on iOS */
   input, select, textarea {
