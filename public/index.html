@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,6 +7,7 @@
     <title>COLONIAL - Timeless Elegance</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="/style.css">
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
@@ -32,7 +34,6 @@
             display: inline-flex;
             align-items: center;
         }
-        /* Modal base */
         .modal {
             display: none;
             align-items: center;
@@ -128,8 +129,7 @@
 </div>
 <div id="cart-overlay" class="fixed inset-0 bg-black/50 z-40 opacity-0 invisible transition-all duration-300" onclick="toggleCart()"></div>
 
-<!-- Checkout Modal (with manual payment) -->
-<!-- Checkout Modal (with mandatory delivery fee & transaction ID for all orders) -->
+<!-- Checkout Modal (with mandatory delivery fee & transaction ID) -->
 <div id="checkout-modal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
     <div class="bg-white rounded-xl max-w-md w-full mx-auto p-6 max-h-[90vh] overflow-auto">
         <div class="flex justify-between items-center mb-4">
@@ -190,6 +190,7 @@
         <button onclick="closeCheckout()" class="w-full mt-2 border border-gray-300 py-2 rounded-lg text-sm hover:bg-gray-100">Cancel</button>
     </div>
 </div>
+
 <!-- Product Quick View Modal -->
 <div id="product-modal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
     <div class="bg-white rounded-xl max-w-2xl w-full mx-auto p-4 md:p-6 max-h-[90vh] overflow-auto">
@@ -269,7 +270,7 @@
     </div>
 </div>
 
-<!-- My Orders Modal (with payment status) -->
+<!-- My Orders Modal -->
 <div id="orders-modal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
     <div class="bg-white rounded-xl max-w-3xl w-full mx-auto p-6 max-h-[80vh] overflow-auto">
         <div class="flex justify-between items-center mb-4"><h3 class="text-2xl font-serif">My Orders</h3><button onclick="closeOrdersModal()" class="hover:opacity-70"><i data-lucide="x" class="w-5 h-5"></i></button></div>
@@ -277,17 +278,15 @@
     </div>
 </div>
 
-<!-- ==================== FOOTER ==================== -->
+<!-- FOOTER -->
 <footer class="bg-black text-white/80 mt-16 py-8 px-4 md:px-6 lg:px-12 border-t border-gray-800">
     <div class="max-w-7xl mx-auto">
-        <!-- Contact row -->
         <div class="text-center space-y-2 text-sm">
             <p>📧 <a href="mailto:Colonialbusinessltd@gmail.com" class="hover:underline">colonialbusinessltd@gmail.com</a></p>
             <p>📞 <a href="tel:+8801871330654" class="hover:underline">+880 1871-330654</a> (bKash/Nagad)</p>
             <p>📍 Chittagong, Bangladesh</p>
         </div>
 
-        <!-- Links row – all working modals -->
         <div class="flex flex-wrap justify-center gap-x-6 gap-y-3 text-sm text-center mt-6 pt-6 border-t border-gray-800">
             <a href="#" id="size-guide-link" class="hover:underline inline-block">Size Guide</a>
             <a href="#" id="fabric-care-link" class="hover:underline inline-block">Fabric Care</a>
@@ -301,23 +300,21 @@
             <a href="#" id="footer-privacy-link" class="hover:underline inline-block">Privacy Policy</a>
         </div>
 
-        <!-- Social icons -->
+        <!-- Social icons using Font Awesome (always visible) -->
         <div class="flex justify-center gap-6 mt-6">
-            <a href="https://www.facebook.com/share/18PUUso8Pp/" target="_blank" rel="noopener noreferrer" class="text-white/80 hover:text-white transition-colors">
-                <i data-lucide="facebook" class="w-5 h-5"></i>
+            <a href="https://www.facebook.com/share/18PUUso8Pp/" target="_blank" rel="noopener noreferrer" class="text-white/80 hover:text-[#D4AF37] transition-colors text-2xl" aria-label="Facebook">
+                <i class="fab fa-facebook-f"></i>
             </a>
-            <a href="https://www.instagram.com/colonial_ltd" target="_blank" rel="noopener noreferrer" class="text-white/80 hover:text-white transition-colors">
-                <i data-lucide="instagram" class="w-5 h-5"></i>
+            <a href="https://www.instagram.com/colonial_ltd" target="_blank" rel="noopener noreferrer" class="text-white/80 hover:text-[#D4AF37] transition-colors text-2xl" aria-label="Instagram">
+                <i class="fab fa-instagram"></i>
             </a>
         </div>
 
-        <!-- Copyright -->
         <div class="text-center text-xs text-white/50 mt-6 pt-6 border-t border-gray-800">
             &copy; 2026 COLONIAL. All rights reserved.
         </div>
     </div>
 </footer>
-
 <!-- ==================== ALL MODALS ==================== -->
 
 <!-- Terms & Conditions Modal -->
